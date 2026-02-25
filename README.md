@@ -10,6 +10,12 @@
 | 27 de abr | Capítulos IV (Descripción de la solución)  | 4       | 25 de may |
 | 27 de abr |  Capítulo V (Conclusiones, Discusión de resultados, Recomendaciones y futuras líneas de actuación) / Bibliografía | 4       | 25 de may |
 
+### Acerca de plazos y tiempos
+
+
+
+Para la adecuada gestión del TFG el seguimiento de las fechas de entrega es fundamental. Una entrega fuera de tiempo (o una aparente entrega a tiempo pero con deficiencias evidentes en el documento presentado) inhabilita para la defensa en convocatoria ordinaria. Y dos entregas en estas condiciones inhabilitan la defensa en convocatoria extraordinaria.
+
 # Contenido
 
 1. [Estudiantes.](Estudiantes)
