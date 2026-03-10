@@ -1,49 +1,83 @@
+# 1. Contexto 
+## 1.1 Contexto del sector de las telecomunicaciones
 
-# 1 Telefónica como organización del sector de las telecomunicaciones
-[Telefónica](https://www.telefonica.com/es/nosotros/) es una de las principales compañias multinacionales del sector de telecomunicaciones a nivel mundial. Fundada en 1924 en España. Actualmente opera por Europa y Latinoamérica, ofreciendo servicios de comunicaciones fijas y móviles, acceso a internet de banda ancha, servicios de datos, soluciones digitales. Contaba con aproximadamente 24.000 trabajadores en Noviembre de 2025  aunque por el último ERE se ha visto reducido a 22.000 en Marzo de 2026.
+El sector de las telecomunicaciones constituye uno de los pilares fundamentales de la economía digital actual. Las infraestructuras de telecomunicaciones permiten el funcionamiento de servicios esenciales como el acceso a internet, la telefonía móvil, la transmisión de datos o los servicios digitales avanzados utilizados por empresas, administraciones públicas y ciudadanos.
 
-En el ámbito empresarial, no solo proporciona infraestructura de telecomunicaciones, sino que también desarrolla soluciones avanzadas en áreas como la transformación digital, ciberseguridad, cloud computing y servicios de gestión de redes. Su actividad se apoya en una infraestructura tecnológica compleja y en la gestión de un elevado volumen de procesos operativos diarios.
+Durante las últimas décadas, el sector ha experimentado una profunda transformación tecnológica. La evolución desde redes analógicas hacia infraestructuras digitales, el despliegue de redes de fibra óptica y la expansión de las redes móviles de alta capacidad han incrementado notablemente la complejidad de la gestión de las infraestructuras de telecomunicaciones.
 
-## 1.1 Contexto organizativo del proyecto
-Dentro de la estructura organizativa de Telefónica, la compañía distingue entre Planta Interna y Planta Externa.
+En la actualidad, los operadores de telecomunicaciones deben gestionar redes altamente distribuidas que incluyen miles de kilómetros de cableado, estaciones base, nodos de acceso, centros de conmutación y múltiples sistemas de soporte. Esta infraestructura debe mantenerse operativa de forma continua, garantizando niveles elevados de disponibilidad y calidad de servicio.
 
-+ **Planta Interna**: orientada principalmente a la gestión técnica y administrativa de servicios dentro de infraestructuras propias.
+Además, el desarrollo urbano y la ejecución de obras civiles generan de forma constante modificaciones o afectaciones sobre las infraestructuras existentes. Proyectos de urbanización, construcción de carreteras, desarrollo de nuevas zonas residenciales o ampliación de infraestructuras públicas pueden requerir intervenciones sobre redes de telecomunicaciones ya desplegadas.
 
-+ **Planta Externa**: responsable del despliegue, mantenimiento, modificación y supervisión de la red de telecomunicaciones en campo.
+En este contexto, las empresas operadoras deben gestionar numerosos expedientes relacionados con variaciones en la infraestructura de red, tales como desplazamientos de cableado, modificaciones en canalizaciones, adaptación de infraestructuras existentes o coordinación con proyectos urbanísticos. Estas actuaciones requieren una coordinación constante entre diferentes actores, incluyendo administraciones públicas, empresas constructoras, ingenierías y departamentos internos de las propias compañías.
 
-El Trabajo de Fin de Grado se enmarca dentro del área de Planta Externa, en específico en el departamento encargado de la gestión de variaciones de infraestructura.
+Como consecuencia, la gestión administrativa y técnica asociada a estas actuaciones genera un elevado volumen de documentación, consultas y comunicaciones que deben ser gestionadas de forma eficiente.
 
-Este departamento gestiona solicitudes relacionadas con modificaciones en instalaciones existentes, afectaciones sobre la red, expedientes técnicos asociados a proyectos urbanísticos, obras civiles u otras actuaciones que puedan impactar sobre la infraestructura de telecomunicaciones.
+## 1.1 Telefónica como organización del sector de las telecomunicaciones
 
-## 1.2 El buzón corporativo de variaciones
-El canal de entrada de variaciones es uno de los principales buzones utlizados por telefónica que relaciona con terceros. Siendo la manera de comunicación formal entre Telefónica y: 
-+ Empresas constructoras
-+ Ingenierías
-+ Administraciones públicas
-+ Organismos oficiales
-+ Particulares
+elefónica es una de las principales compañías multinacionales del sector de las telecomunicaciones a nivel mundial. Fundada en 1924 en España, la empresa ha evolucionado desde un operador nacional de telefonía fija hasta convertirse en un grupo tecnológico global con presencia en múltiples países de Europa y Latinoamérica.
 
-El objetivo principal del buzón es la consulta del estado de actuaciones, expedientes y/o [petter](./glosario/petter.md). No obstante, en la práctica, se reciben consulta heterogéneas formado por consultas incompletas, peticiones duplicadas o pregunta por otros elementos ajenos a variaciones.
+Actualmente Telefónica ofrece una amplia gama de servicios de comunicaciones, entre los que se incluyen telefonía fija, telefonía móvil, acceso a internet de banda ancha, servicios de transmisión de datos y soluciones digitales orientadas tanto a clientes particulares como a empresas y administraciones públicas.
 
-# 2. Situación actual y problemática
-El elevado volumen de correos recibidos diariamente, junto con la diversidad de las consultas y la complejidad de las aplicaciones para poder responder agilmente, genera una carga significativa y un entorno de mejora mediante la automatización. 
+Además de la provisión de servicios de conectividad, la compañía desarrolla soluciones en ámbitos como la transformación digital, la ciberseguridad, el cloud computing o los servicios de gestión de redes. Estas actividades requieren la gestión de una infraestructura tecnológica compleja y altamente distribuida, formada por redes de fibra óptica, redes móviles, centros de datos y múltiples sistemas de soporte.
+
+En el ámbito organizativo, Telefónica cuenta con diferentes áreas especializadas responsables de la planificación, despliegue, mantenimiento y evolución de la red de telecomunicaciones. Estas áreas gestionan tanto los aspectos técnicos de la infraestructura como los procesos administrativos asociados a la operación de la red.
+
+En noviembre de 2025 la compañía contaba con aproximadamente 24.000 trabajadores en España, cifra que se ha reducido a aproximadamente 22.000 empleados en marzo de 2026 tras los procesos de reorganización interna derivados de los últimos planes de ajuste.
+
+## 1.2 Contexto organizativo del proyecto
+
+Dentro de la estructura organizativa de Telefónica, la gestión de la red se divide tradicionalmente en dos grandes áreas operativas: Planta Interna y Planta Externa.
+
+La Planta Interna se encarga principalmente de la gestión técnica y administrativa de los elementos de red ubicados dentro de infraestructuras propias de la compañía, como centrales, centros de datos o instalaciones técnicas.
+
+Por otro lado, la Planta Externa es responsable del despliegue, mantenimiento, modificación y supervisión de la infraestructura de telecomunicaciones situada en el entorno urbano y rural. Esto incluye cableado, canalizaciones, arquetas, postes, cajas terminales y otros elementos que forman parte de la red física desplegada en la vía pública.
+
+El presente Trabajo de Fin de Grado se desarrolla dentro del ámbito de la Planta Externa, concretamente en el departamento encargado de la gestión de variaciones de infraestructura.
+
+Este departamento tiene como función principal la gestión de solicitudes relacionadas con modificaciones en instalaciones existentes, afectaciones sobre la red o expedientes técnicos asociados a proyectos urbanísticos y obras civiles que puedan impactar sobre la infraestructura de telecomunicaciones.
+
+# 2. Estado del Arte
+
+## 2.1 Análisis de la situación actual del proceso de gestión del buzón
+
+El buzón analizado constituye uno de los principales canales de entrada de solicitudes relacionadas con expedientes, actuaciones y peticiones dentro del entorno operativo. Actualmente, este buzón recibe un volumen aproximado de 1.000 correos electrónicos diarios, procedentes de distintos interlocutores que solicitan información o requieren alguna gestión relacionada con expedientes concretos. Este volumen elevado de comunicaciones, unido a la diversidad de las consultas recibidas, genera una carga operativa significativa para el equipo encargado de su gestión.
+
+La situación se ve agravada por la reducción de recursos humanos, lo que provoca que el número de técnicos disponibles para gestionar estas solicitudes sea menor que en etapas anteriores. Como consecuencia, se incrementa la presión sobre el equipo encargado del buzón y se producen retrasos en la atención de determinadas consultas, pudiendo llegar incluso a acumularse correos pendientes de respuesta. Este contexto pone de manifiesto la necesidad de analizar el proceso actual y valorar posibles mejoras que permitan optimizar su funcionamiento.
+
+El proceso de gestión del buzón se realiza actualmente de forma completamente manual. Cada vez que llega un nuevo correo, un técnico debe revisar su contenido para interpretar la solicitud planteada. En muchos casos, el mensaje hace referencia a un número identificador, normalmente asociado a un expediente, actuación o petición concreta. Cuando esto ocurre, el técnico debe acceder a diversas aplicaciones corporativas (como Sgipe, Atlas o Petter) con el objetivo de localizar la información correspondiente.
+
+Una vez identificado el expediente en las aplicaciones internas, el técnico debe recopilar la información relevante, analizar su estado y utilizar estos datos para redactar manualmente la respuesta que será enviada al solicitante. Este procedimiento implica navegar entre diferentes sistemas, localizar los datos necesarios y elaborar una respuesta adecuada para cada caso.
+
+De forma simplificada, el proceso actual puede resumirse en las siguientes fases:
+
++ Recepción del correo en el buzón del canal de entrada.
++ Lectura e interpretación de la solicitud por parte de un técnico.
+
++ Identificación de números de expediente o referencias, si existen.
+
++ Consulta de información en aplicaciones corporativas (Sgipe, Atlas, Petter, etc.).
+
++ Elaboración manual de la respuesta y envío al solicitante.
 
 
-## 2.1 Problemática identificada
-Ante la entrada aproximada de 1.000 correos diarios y sumado a que todo el proceso es manual. Provoca que haya correos que no puedan ser atendidos. Sumado este constante retraso la reducción de recursos humanos ha incrementado la carga operativo, dificultando el mantenimiento a niveles óptimos.
+En aquellos casos en los que el correo no incluye ningún número identificador, el proceso requiere un análisis adicional. El técnico debe interpretar el contenido del mensaje para determinar qué tipo de solicitud se está realizando y decidir si puede gestionarla directamente o si debe redirigir el correo al área o departamento correspondiente. Esta tarea de clasificación también se realiza manualmente y depende de la experiencia y criterio del técnico.
 
-## 2.2 Descripción del proceso actual de gestión del buzón
-El proceso actual consiste en la llegada de un correo al buzón de correo del canal de entrada. Un técnico se encarga de leer el correo, analizar que se pide con el correo. Si hace referencia a un número, se tiene que meter a las aplicaciones correspondientes (Sgipe, Atlas, Petter, ...), recopilar la información y formar el correo para responder.
+Este modelo de gestión presenta varias limitaciones que afectan directamente a la eficiencia del proceso. En primer lugar, existe una alta dependencia del factor humano, ya que todas las tareas se realizan manualmente. Esto dificulta la posibilidad de automatizar parte del proceso y limita la capacidad de adaptación ante incrementos en el volumen de correos.
 
-Si en el correo recibido no hace referencia a ningun número, en función de lo que se pida, el técnico deberá desviar hacia el sitio correcto para lo que se pida. 
+Entre las principales limitaciones del modelo actual destacan:
 
-## 2.3 Limitaciones del modelo actual
-El modelo de solucionar este proceso tiene una serie de limitaciones estructurales:
-+ Dependencia del factor humano, lo que impide la automatización parcial del proceso.
-+ Escasa escalabilidad, dado que el volumen de correos puede incrementarse sin que exista una ampliación proporcional de recursos.
-+ Repetitividad operativa, ya que un porcentaje significativo de las consultas se limita a la solicitud de estado de expediente.
-+ Riesgo de error humano, especialmente en la transcripción o interpretación de datos
-+ Incremento del tiempo medio de respuesta, derivado del volumen de entrada y de la necesidad de acceder manualmente a diferentes sistemas.
++ Dependencia del trabajo manual, lo que ralentiza la gestión del buzón.
+
++ Escasa escalabilidad, ya que el aumento del volumen de correos requiere más recursos humanos.
+
++ Repetitividad de muchas consultas, especialmente aquellas relacionadas con el estado de expedientes.
+
++ Riesgo de error humano, tanto en la interpretación de los correos como en la transcripción de datos.
+
++ Incremento del tiempo medio de respuesta, debido a la necesidad de consultar múltiples sistemas de forma manual.
+
+En conjunto, la combinación de alto volumen de correos, procesos manuales y limitación de recursos genera un entorno en el que la gestión del buzón resulta cada vez más compleja. Por este motivo, se identifica una clara oportunidad de mejora mediante la introducción de mecanismos de automatización, especialmente en aquellas tareas repetitivas como la identificación de números de expediente, la consulta de información en sistemas corporativos y la generación de respuestas estándar. Estas mejoras permitirían reducir la carga operativa del equipo y mejorar la eficiencia del proceso de gestión del buzón.
 
 # 3. Estado del arte 
 La automatización de procesos repetitivos se ha convertido en una práctica habitual para mejorar la eficiencia operativa. Las tecnologías de Robotic Process Automation (RPA) permiten replicar tareas humanas basadas en reglas, como la lectura de correos, extracción de datos o consulta de sistemas.
