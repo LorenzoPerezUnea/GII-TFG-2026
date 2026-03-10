@@ -25,7 +25,7 @@ Además de la provisión de servicios de conectividad, la compañía desarrolla 
 
 En el ámbito organizativo, Telefónica cuenta con diferentes áreas especializadas responsables de la planificación, despliegue, mantenimiento y evolución de la red de telecomunicaciones. Estas áreas gestionan tanto los aspectos técnicos de la infraestructura como los procesos administrativos asociados a la operación de la red.
 
-En noviembre de 2025 la compañía contaba con aproximadamente 24.000 trabajadores en España, cifra que se ha reducido a aproximadamente 22.000 empleados en marzo de 2026 tras los procesos de reorganización interna derivados de los últimos planes de ajuste.
+En noviembre de 2025 la compañía contaba con aproximadamente 24.000 trabajadores en España, cifra que se ha reducido a aproximadamente 22.000 empleados en marzo de 2026 tras los procesos de reorganización interna derivados de los últimos planes de ajuste. [1](enlaces.md)
 
 ## 1.2 Contexto organizativo del proyecto
 
@@ -88,13 +88,15 @@ Entre las soluciones más habituales se encuentran la ampliación de recursos hu
 
 ### Incremento de recursos humanos
 
+![](./imagenes/atencion_cliente.png)
+
 Una de las soluciones más tradicionales consiste en aumentar el número de empleados encargados de gestionar el buzón de correo. Este enfoque ha sido ampliamente utilizado en departamentos de atención al cliente o soporte técnico, donde el incremento del volumen de solicitudes suele resolverse mediante la ampliación del equipo de agentes.
 
 La lógica de este enfoque consiste en incrementar la capacidad operativa del servicio mediante la incorporación de más personal que se encargue de leer los correos recibidos, analizar las solicitudes y proporcionar una respuesta adecuada a cada caso.
 
 Un ejemplo de este enfoque puede observarse en grandes centros de atención al cliente. Empresas como Amazon o Telefónica han incrementado en distintos momentos el número de agentes de soporte para hacer frente a picos de demanda en sus servicios de atención al cliente.
 
-Por ejemplo, Amazon ha ampliado en diversas ocasiones su plantilla de atención al cliente para poder gestionar el crecimiento del comercio electrónico y el aumento de consultas de usuarios, especialmente en periodos de alta demanda como campañas comerciales o eventos de venta online. [1](enlaces.md)
+Por ejemplo, Amazon ha ampliado en diversas ocasiones su plantilla de atención al cliente para poder gestionar el crecimiento del comercio electrónico y el aumento de consultas de usuarios, especialmente en periodos de alta demanda como campañas comerciales o eventos de venta online. [2](enlaces.md)
 
 **Ventajas**
 + Permite aumentar la capacidad de respuesta de forma inmediata.
@@ -112,6 +114,8 @@ Por ejemplo, Amazon ha ampliado en diversas ocasiones su plantilla de atención 
 
 ### Sistemas de ticketing o helpdesk
 
+![](./imagenes/ticket-workflow.png)
+
 Otra de las soluciones ampliamente adoptadas por las empresas consiste en implantar sistemas de ticketing, que permiten transformar los correos electrónicos recibidos en incidencias o solicitudes gestionadas mediante un sistema centralizado.
 
 Un sistema de ticketing convierte cada correo recibido en un ticket identificado con un número único, lo que permite registrar, clasificar, priorizar y realizar el seguimiento de cada solicitud. Estos sistemas permiten organizar las consultas recibidas, asignarlas a distintos equipos y realizar un seguimiento del estado de cada caso.
@@ -120,16 +124,18 @@ Además, muchas de estas herramientas incorporan funciones de automatización qu
 
 Entre las herramientas más utilizadas en el mercado destacan plataformas como Zendesk, Zoho Desk, Jira Service Management o Kayako.
 
-Numerosas empresas utilizan sistemas de ticketing para gestionar sus servicios de soporte. Un ejemplo es la empresa tecnológica Shopify, que utiliza la plataforma Zendesk para gestionar las consultas de sus clientes y centralizar todas las solicitudes recibidas desde diferentes canales de comunicación.
+Numerosas empresas utilizan sistemas de ticketing para gestionar sus servicios de soporte. Un ejemplo es la empresa tecnológica Cabify, que utiliza la plataforma Zendesk para gestionar las consultas de sus clientes y centralizar todas las solicitudes recibidas desde diferentes canales de comunicación.
 
-Gracias a esta herramienta, la empresa puede organizar las solicitudes en tickets, asignarlas a distintos equipos y realizar un seguimiento del estado de cada incidencia. [2](enlaces.md)
+Gracias a esta herramienta, la empresa puede organizar las solicitudes en tickets, asignarlas a distintos equipos y realizar un seguimiento del estado de cada incidencia. [3](enlaces.md)
+
+![](./imagenes/ticket_cabify.png)
 
 **Ventajas**
 + Centralización de todas las solicitudes en una única plataforma.
 
 + Mejora en la trazabilidad y seguimiento de las incidencias.
 
-+ Posibilidad de establecer prioridades y acuerdos de nivel de servicio (SLA).
++ Posibilidad de establecer prioridades y acuerdos de nivel de servicio.
 
 + Automatización parcial de procesos de gestión.
 
