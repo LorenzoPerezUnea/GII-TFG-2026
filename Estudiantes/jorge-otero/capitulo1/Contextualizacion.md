@@ -1,4 +1,4 @@
-# 1. Contexto 
+# 1. Introducción
 ## 1.1 Contexto del sector de las telecomunicaciones
 
 El sector de las telecomunicaciones constituye uno de los pilares fundamentales de la economía digital actual. Las infraestructuras de telecomunicaciones permiten el funcionamiento de servicios esenciales como el acceso a internet, la telefonía móvil, la transmisión de datos o los servicios digitales avanzados utilizados por empresas, administraciones públicas y ciudadanos.
@@ -39,9 +39,9 @@ El presente Trabajo de Fin de Grado se desarrolla dentro del ámbito de la Plant
 
 Este departamento tiene como función principal la gestión de solicitudes relacionadas con modificaciones en instalaciones existentes, afectaciones sobre la red o expedientes técnicos asociados a proyectos urbanísticos y obras civiles que puedan impactar sobre la infraestructura de telecomunicaciones.
 
-# 2. Estado del Arte
+# 2. Marco Teórico
 
-## 2.1 Análisis de la situación actual del proceso de gestión del buzón
+## 2.1 Estado del Arte
 
 El buzón analizado constituye uno de los principales canales de entrada de solicitudes relacionadas con expedientes, actuaciones y peticiones dentro del entorno operativo. Actualmente, este buzón recibe un volumen aproximado de 1.000 correos electrónicos diarios, procedentes de distintos interlocutores que solicitan información o requieren alguna gestión relacionada con expedientes concretos. Este volumen elevado de comunicaciones, unido a la diversidad de las consultas recibidas, genera una carga operativa significativa para el equipo encargado de su gestión.
 
