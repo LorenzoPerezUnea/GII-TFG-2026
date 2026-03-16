@@ -13,7 +13,7 @@ En este contexto, las empresas operadoras deben gestionar numerosos expedientes 
 
 Como consecuencia, la gestión administrativa y técnica asociada a estas actuaciones genera un elevado volumen de documentación, consultas y comunicaciones que deben ser gestionadas de forma eficiente.
 
-## 1.1 Telefónica como organización del sector de las telecomunicaciones
+## 1.2 Telefónica como organización del sector de las telecomunicaciones
 
 ![](./imagenes/evolucion_logo.jpg)
 
@@ -27,7 +27,7 @@ En el ámbito organizativo, Telefónica cuenta con diferentes áreas especializa
 
 En noviembre de 2025 la compañía contaba con aproximadamente 24.000 trabajadores en España, cifra que se ha reducido a aproximadamente 22.000 empleados en marzo de 2026 tras los procesos de reorganización interna derivados de los últimos planes de ajuste. [3](enlaces.md)
 
-## 1.2 Contexto organizativo del proyecto
+## 1.3 Contexto organizativo del proyecto
 
 Dentro de la estructura organizativa de Telefónica, la gestión de la red se divide tradicionalmente en dos grandes áreas operativas: Planta Interna y Planta Externa.
 
