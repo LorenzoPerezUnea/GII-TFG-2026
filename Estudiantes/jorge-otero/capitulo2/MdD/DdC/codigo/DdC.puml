@@ -11,9 +11,7 @@ class Intencion
 class Peticion
 class Respuesta
 
-class Sgipe
-class Petter
-class Wepes
+class AplicacionInterna
 
 Cliente -- Correo : envia
 Tecnico -- Correo : analiza
@@ -23,9 +21,7 @@ Correo -- Peticion : contiene
 
 Tecnico -- Peticion : interpreta
 
-Tecnico -- Sgipe : consulta
-Tecnico -- Petter : consulta
-Tecnico -- Wepes : consulta
+Tecnico -- AplicacionInterna : Consulta
 
 Respuesta -- Cliente : recibe
 
