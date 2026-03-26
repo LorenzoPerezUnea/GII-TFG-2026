@@ -1,22 +1,24 @@
 @startuml
 
+rectangle "Modelo de Dominio" {
 rectangle Proyecto
 rectangle Documentacion
-rectangle DRF
-rectangle DDS
 rectangle CasoDeUso
 rectangle RequisitoFuncional
 rectangle EscenarioPrueba
+rectangle CasoPrueba
 
-Proyecto o-- Documentacion : contiene
+Proyecto o-- Documentacion 
 
-Documentacion <|-- DRF
-Documentacion <|-- DDS
-
-Documentacion *-- CasoDeUso : incluye
-Documentacion *-- RequisitoFuncional : incluye
+Documentacion *-- CasoDeUso 
+Documentacion *-- RequisitoFuncional 
 
 EscenarioPrueba -- CasoDeUso : valida
 EscenarioPrueba -- RequisitoFuncional : valida
+EscenarioPrueba --> CasoPrueba : concretar en
+}
+
+rectangle "KiwiTCMS\n[sistema externo participante]" as KiwiTCMS
+CasoPrueba --> KiwiTCMS: publicar/sincronizar en
 
 @enduml
