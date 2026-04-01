@@ -42,7 +42,7 @@
 
 ##### Descripción de casos de uso
 
-##### Prototipos[Prototipos](./Capitulo2/Prototipos.md)
+##### [Prototipos](./Capitulo2/Prototipos.md)
 
 
 #### 4. Análisis y diseño
