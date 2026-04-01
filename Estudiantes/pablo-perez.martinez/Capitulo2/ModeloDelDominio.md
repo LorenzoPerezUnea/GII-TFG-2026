@@ -7,24 +7,24 @@ En este caso, el dominio se sitúa en el entorno de producción de Visual Tracki
 ## Diagrama de clases
 #### Cálculo de indicadores de OEE en VT
 
-![Diagrama de clases](./Capitulo2/imagenes/diagramaDeClases.svg)
+![Diagrama de clases](./imagenes/diagramaDeClases.svg)
 
 ## Diagrama de objetos
 #### Solicitar datos de split a base de datos de VT
-![Diagrama de objetos 1](./Capitulo2/imagenes/diagramaDeObjetos_solicitaDatos.svg)
+![Diagrama de objetos 1](./imagenes/diagramaDeObjetos_solicitaDatos.svg)
 
 
 #### Devuelve datos del split para el cálculo
-![Diagrama de objetos 2](./Capitulo2/imagenes/diagramaDeObjetos_devuelveDatos.svg)
+![Diagrama de objetos 2](./imagenes/diagramaDeObjetos_devuelveDatos.svg)
 
 
 #### Cálculo de SplitIndexInfo por VT
-![Diagrama de objetos 3](./Capitulo2/imagenes/diagramaDeObjetos_calculos.svg)
+![Diagrama de objetos 3](./imagenes/diagramaDeObjetos_calculos.svg)
 
 
 ## Diagrama de estados
 #### Diagrama de estados
-![Diagrama de objetos 1](./Capitulo2/imagenes/diagramaDeEstados.svg)
+![Diagrama de objetos 1](./imagenes/diagramaDeEstados.svg)
 
 
 ## Diagrama de actividad
