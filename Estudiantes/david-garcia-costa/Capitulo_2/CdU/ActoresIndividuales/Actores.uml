@@ -1,0 +1,7 @@
+@startuml
+left to right direction
+
+actor "Kiwi TCMS" as KIWI
+actor "Ingeniero QA" as QA
+
+@enduml
