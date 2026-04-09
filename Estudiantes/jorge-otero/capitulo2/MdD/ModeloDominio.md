@@ -1,4 +1,4 @@
-# Modelo de 
+# Modelo de Dominio
 
 ## Glosario
 
