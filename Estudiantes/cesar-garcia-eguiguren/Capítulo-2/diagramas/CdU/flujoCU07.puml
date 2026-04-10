@@ -14,7 +14,7 @@ start
 
 :CU-01 (JWT válido);
 :Actor navega a **/proyectos/{id}**
-(desde CU-08 o resultado CU-25);
+(desde CU-08 o resultado CU-26);
 
 :verify_project_scope(cu, project_id);
 
@@ -28,11 +28,8 @@ fork
 fork again
   :GET /tasks/stages;
 fork again
-  :GET /dashboards/summary/project/{id}
-   → ProjectEfficiencyService
-   → RiskIndexService  [<<extend>> CU-15]
-   → ProfitabilityService
-     (coste estimado vs real por horas×tarifa);
+  :GET /dashboards/summary/project/{id};
+
 fork again
   :GET /projects/{id}/tasks
    ?page=1&page_size=20

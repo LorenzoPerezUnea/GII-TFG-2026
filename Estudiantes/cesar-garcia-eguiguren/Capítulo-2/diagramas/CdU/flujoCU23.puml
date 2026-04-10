@@ -7,7 +7,7 @@ skinparam ActivityBorderColor #1E2840
 skinparam ActivityBackgroundColor #141824
 skinparam ActivityDiamondBackgroundColor #0D1018
 skinparam ActivityDiamondBorderColor #38BDF8
-
+skinparam NoteFontColor #07090F
 title CU-23 · Consultar Rentabilidad Financiera (Director exclusivo)
 
 start
@@ -66,7 +66,7 @@ end note
  income, expense, net, horas, rentabilidad%, badge;
 
 if (¿Click en "Ver Detalles" fila proyecto?) then (SÍ)
-  :<<extend>> CU-26
+  :<<extend>> CU-24
    → GET /metrics/profitability/per-project/{id}/lines
    → Panel de líneas analíticas ingresos/gastos;
 endif
@@ -75,7 +75,7 @@ endif
  por partner_id;
 
 if (¿Click en "Ver Detalles" fila cliente?) then (SÍ)
-  :<<extend>> CU-27
+  :<<extend>> CU-25
    → GET /metrics/profitability/per-client/{id}/lines
    → Panel de líneas analíticas por cliente;
 endif
@@ -92,9 +92,5 @@ endif
 
 stop
 
-note right
-  ⚠ No existe GET /dashboards/team-assignment
-  ni panel de "Estado del equipo" en esta página.
-end note
 
 @enduml
