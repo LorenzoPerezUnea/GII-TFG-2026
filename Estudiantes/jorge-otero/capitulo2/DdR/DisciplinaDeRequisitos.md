@@ -35,7 +35,7 @@ El proceso se inicia cuando el cliente envía una solicitud, pasando esta al est
 
 Una vez finalizado este tratamiento, se genera la respuesta y la solicitud pasa al estado Respondida, momento en el que el cliente recibe la contestación. Tras ello, el flujo finaliza al haberse completado la gestión de la solicitud.
 
-## Formulario
+### Formulario
 
 | Diagrama | Código |
 |---------|---------|
@@ -47,6 +47,21 @@ Posteriormente, el sistema procesa la información recibida y el formulario qued
 
 Una vez revisado, el técnico inicia su gestión, llevando el formulario al estado En resolución. Finalmente, tras realizar las acciones necesarias, el técnico actualiza su estado, quedando el formulario como resuelto y finalizando el proceso.
 
+## Diagramas de Contexto  
+
+| Diagrama | Código |
+|---------|---------|
+|![Diagrama de Contexto](./DdC/imagen/DdC_Tecnico.png)|[Ver código](./DdC/codigo/DdC_Tecnico.puml)|
+
+El técnico interactúa con el sistema para llevar a cabo la gestión de las solicitudes. Por un lado, puede actualizar el estado de las mismas a través del sistema, reflejando así su resolución o avance en el proceso. Por otro lado, dispone de una vista de datos externa al sistema principal que le permite consultar las solicitudes pendientes, facilitando su organización y priorización. De este modo, el técnico combina acciones de consulta y gestión para asegurar el correcto tratamiento de las solicitudes.
+
+| Diagrama | Código |
+|---------|---------|
+|![Diagrama de Contexto](./DdC/imagen/DdC_Cliente.png)|[Ver código](./DdC/codigo/DdC_Cliente.puml)|
+
+El cliente interactúa con el sistema iniciando el proceso mediante el envío de una solicitud, a través de la cual comunica una necesidad o incidencia. El sistema recibe dicha solicitud y, tras su procesamiento, devuelve una respuesta al cliente, manteniendo así el flujo de comunicación.
+
+Además, en aquellos casos en los que se requiere información adicional, el cliente puede interactuar con el formulario, completándolo para aportar datos complementarios que permitan una mejor gestión de la solicitud. De este modo, el cliente participa tanto en la generación inicial de la solicitud como en su posible ampliación mediante información adicional.
 
 ## Priorizar Casos de Uso 
 
@@ -185,11 +200,14 @@ Este proceso permite complementar la información de una solicitud previa de for
 
 ## Estructurar la Descripción de los Casos de Uso
 
-### Diagramas de Contexto  
+## Diagramas de Contexto  
 
 | Diagrama | Código |
 |---------|---------|
 |![Diagrama de Contexto](./DdC/imagen/DdC_Tecnico.png)|[Ver código](./DdC/codigo/DdC_Tecnico.puml)|
+
+| Diagrama | Código |
+|---------|---------|
 |![Diagrama de Contexto](./DdC/imagen/DdC_Cliente.png)|[Ver código](./DdC/imagen/DdC_Cliente.png)|
 
 
