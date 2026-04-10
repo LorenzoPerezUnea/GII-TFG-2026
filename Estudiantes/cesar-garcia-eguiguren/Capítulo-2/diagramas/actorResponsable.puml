@@ -5,6 +5,8 @@ skinparam actorStyle awesome
 actor Responsable as R
 
 usecase "CU-01 Autenticarse en el Sistema" as CU01
+usecase "CU-27 Cerrar Sesión" as CU27
+
 usecase "CU-02 Listar y Buscar Empleados\n[scope]" as CU02
 usecase "CU-03 Visualizar Resumen de Empleado\n[scope]" as CU03
 usecase "CU-04 Listar Departamentos\n[sus depart.]" as CU04
@@ -13,6 +15,7 @@ usecase "CU-06 Listar Proyectos\n[sus proyectos]" as CU06
 usecase "CU-07 Visualizar Resumen de Proyecto\n[sus proyectos]" as CU07
 usecase "CU-08 Listar y Filtrar Tareas\n[sus proyectos]" as CU08
 usecase "CU-09 Consultar Detalle de Tarea\n[sus proyectos]" as CU09
+
 usecase "CU-10 Consultar Métrica de Productividad" as CU10
 usecase "CU-11 Consultar Métrica de Cumplimiento de Plazos" as CU11
 usecase "CU-12 Consultar Métrica de WIP de Empleado" as CU12
@@ -24,11 +27,14 @@ usecase "CU-17 Consultar Métrica de Lead Time" as CU17
 usecase "CU-18 Consultar Tiempo de Permanencia por Estado" as CU18
 usecase "CU-19 Consultar Métrica de Tareas Canceladas" as CU19
 usecase "CU-20 Consultar Tiempo Invertido por Prioridad" as CU20
+
 usecase "CU-21 Visualizar Gráficos Analíticos\n[scope]" as CU21
 usecase "CU-22 Analizar Asistencia vs Imputaciones\n[solo modo Equipo]" as CU22
 usecase "CU-26 Realizar Búsqueda Global\n[scope]" as CU26
 
 R --> CU01
+R --> CU27
+
 R --> CU02
 R --> CU03
 R --> CU04
@@ -37,6 +43,7 @@ R --> CU06
 R --> CU07
 R --> CU08
 R --> CU09
+
 R --> CU10
 R --> CU11
 R --> CU12
@@ -48,7 +55,9 @@ R --> CU17
 R --> CU18
 R --> CU19
 R --> CU20
+
 R --> CU21
 R --> CU22
 R --> CU26
+
 @enduml
