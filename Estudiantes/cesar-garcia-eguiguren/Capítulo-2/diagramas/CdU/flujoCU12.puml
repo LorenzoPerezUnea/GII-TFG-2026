@@ -1,4 +1,4 @@
-@startuml CU12_Productividad
+@startuml CU12_WIP
 !theme plain
 skinparam backgroundColor #07090F
 skinparam defaultFontColor #E2E8F5
@@ -8,52 +8,52 @@ skinparam ActivityBackgroundColor #141824
 skinparam ActivityDiamondBackgroundColor #0D1018
 skinparam ActivityDiamondBorderColor #38BDF8
 
-title CU-12 · Consultar Productividad
+title CU-12 · Consultar WIP de Empleado
 
 start
 
 :CU-01 (JWT válido);
-:Actor accede a **/métricas**;
+:Actor en /métricas selecciona empleado
+ en panel de parámetros;
 
-:Al cargar /métricas, las métricas "simples"
- (compliance, lead-time, rework-rate)
- se pre-cargan en bulk automáticamente;
+:verify_employee_scope(cu, employee_id);
 
-:Las métricas que requieren parámetros
- muestran "Selecciona empleado/proyecto";
-
-:Actor puede agrupar por categoría:
- [Todas] [Por proyecto] [Por empleado] [Generales];
-
-if (¿Productividad requiere parámetros?) then (SÍ — con filtros de empleado/proyecto/fechas)
-  :Actor selecciona empleado y/o proyecto y/o fechas
-   en el panel de parámetros;
-endif
-
-:Actor hace click en tarjeta "Productividad";
-
-:GET /metrics/productivity
- [?employee_id & project_id
-  & date_from & date_to & root_only];
-
-if (¿Empleado fuera de scope?) then (SÍ)
+if (¿Fuera de scope?) then (SÍ)
   :HTTP 403;
   stop
 endif
 
-if (¿Proyecto fuera de scope?) then (SÍ)
-  :HTTP 403;
+:Actor hace click en tarjeta "WIP";
+
+:GET /metrics/wip?employee_id=X [&root_only]
+ → WIPService.calculate();
+
+:get_user_id_for_employee(db, employee_id);
+
+if (¿Sin user_id vinculado?) then (SÍ)
+  :WIPResponse(wip_count=0, status="optimo",
+   recommendation="Sin tareas asignadas");
   stop
 endif
 
+:COUNT tareas abiertas asignadas al user_id
+ (JOIN TaskAssignment + open_stage_ids_subq)
+ [con root_only si aplicable];
 
-:ProductivityService.calculate();
-:get_completed_tasks_with_hours();
+if (wip_count ≤ 3) then
+  :Status: **ÓPTIMO** (verde)
+   Rec: "Carga óptima de trabajo";
+else if (wip_count ≤ 5) then
+  :Status: **ACEPTABLE** (amarillo)
+   Rec: "Considera priorizar tareas";
+else
+  :Status: **SOBRECARGADO** (rojo)
+   Rec: "Cierra tareas antes de comenzar nuevas";
+endif
 
-
-:Fórmula por tarea: (planned_hours / actual_hours) × 100
- Solo tareas cerradas con planned_hours > 0 y actual_hours > 0;
-
+:KPI numérico de wip_count;
+:Badge de estado;
+:Texto de recomendación;
 
 stop
 

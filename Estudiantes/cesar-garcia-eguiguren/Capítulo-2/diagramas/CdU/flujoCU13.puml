@@ -1,4 +1,4 @@
-@startuml CU13_Cumplimiento
+@startuml CU13_Workload
 !theme plain
 skinparam backgroundColor #07090F
 skinparam defaultFontColor #E2E8F5
@@ -8,37 +8,68 @@ skinparam ActivityBackgroundColor #141824
 skinparam ActivityDiamondBackgroundColor #0D1018
 skinparam ActivityDiamondBorderColor #38BDF8
 
-title CU-13 · Consultar Cumplimiento de Plazos
+title CU-13 · Consultar Carga de Trabajo (Workload) de Empleado
 
 start
 
 :CU-01 (JWT válido);
-:Métrica disponible en **/métricas**
- (también cargada en CU-02 para panel de salud);
+:Actor en /métricas selecciona empleado
+ en panel de parámetros;
 
-:GET /metrics/compliance
- [?employee_id & project_id & root_only];
+:verify_employee_scope(cu, employee_id);
 
-if (¿Filtros de scope inválidos?) then (SÍ)
+if (¿Fuera de scope?) then (SÍ)
   :HTTP 403;
   stop
 endif
 
-:ComplianceService.calculate()
- count_tasks_on_time():
- → on_time: date_end ≤ date_deadline
- → total: tareas cerradas con ambas fechas;
+:Actor hace click en tarjeta "Carga de trabajo";
 
-:compliance_rate = (on_time / total) × 100;
+:GET /metrics/workload?employee_id=X
+ [&detailed&root_only]
+ → WorkloadService.calculate();
 
-:Gauge / PieChart central con %:
-· Verde ≥ 80% · Naranja ≥ 60% · Rojo < 60%;
+:get_user_id_for_employee(db, employee_id);
 
+if (¿Sin user_id vinculado?) then (SÍ)
+  :WorkloadResponse vacío
+   (workload_percentage=0, status="subcargado");
+  stop
+endif
+
+:get_assigned_open_tasks(db, user_id):
+ JOIN TaskAssignment + open_stage_ids;
+
+:pending_hours = SUM(max(planned - worked, 0)
+  por cada tarea abierta);
+
+:workload_pct = (pending_hours / 40h) × 100;
+
+if (workload_pct > 120%) then
+  :Status: **SOBRECARGADO** (rojo);
+else if (workload_pct < 70%) then
+  :Status: **SUBCARGADO** (amarillo);
+else
+  :Status: **NORMAL** (verde);
+endif
+
+:get_assigned_closed_tasks(últimos 30d)
+ → total_completed_tasks;
+
+:Gauge de workload%;
+:Barra de progreso (color según estado);
 :KPIs:
-· Tareas a tiempo
-· Tareas con retraso
-· Total analizadas;
+· pending_hours
+· pending_tasks (tareas abiertas asignadas)
+· completed_tasks (últimos 30d)
+· available_hours (referencia: 40h);
+
+if (¿detailed=True?) then (SÍ)
+  :Incluye lista de pending_tasks y completed_tasks
+   (usado desde CU-05 y GET /dashboards/summary/employee);
+endif
 
 stop
+
 
 @enduml

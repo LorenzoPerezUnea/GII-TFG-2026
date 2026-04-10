@@ -1,4 +1,4 @@
-@startuml CU16_Retrabajo
+@startuml CU16_ExactitudEstimacion
 !theme plain
 skinparam backgroundColor #07090F
 skinparam defaultFontColor #E2E8F5
@@ -8,33 +8,43 @@ skinparam ActivityBackgroundColor #141824
 skinparam ActivityDiamondBackgroundColor #0D1018
 skinparam ActivityDiamondBorderColor #38BDF8
 
-title CU-16 · Consultar Tasa de Retrabajo
+title CU-16 · Consultar Exactitud de Estimación
 
 start
 
 :CU-01 (JWT válido);
-:Métrica disponible en **/métricas**
- (también cargada en CU-02 para panel de salud);
+:Actor en **/métricas** selecciona empleado;
 
-:GET /metrics/rework-rate
- [?project_id & employee_id & root_only];
+:verify_employee_scope(cu, responsable_id);
 
-:ReworkRateService.calculate()
- 1. Obtiene tareas cerradas en scope
- 2. get_tasks_reopened() analiza
-    mail_tracking_value:
-    tarea reabierta = cerrada → abierta en historial;
+if (¿Fuera de scope?) then (SÍ)
+  :HTTP 403;
+  stop
+endif
 
-:rework_rate = (reabiertos / cerradas) × 100;
+:GET /metrics/estimation-accuracy
+ ?responsable_id=X [&root_only];
 
-:PieChart: Reabiertos vs OK;
+:EstimationAccuracyService.calculate()
+ Tareas cerradas del responsable
+ con planned_hours > 0 y worked_hours > 0
+ ratio = actual / planned;
 
-:KPIs:
-· Tasa de retrabajo %
-· Tareas reabiertos
-· Total cerradas;
+:average_ratio = media de ratios;
+:accuracy_pct = average_ratio × 100;
 
-:Semáforo: < 8% verde · 8-15% naranja · > 15% rojo;
+if (accuracy_pct > 110%) then
+  :Sesgo: **subestima**;
+else if (accuracy_pct < 90%) then
+  :Sesgo: **sobreestima**;
+else
+  :Sesgo: **preciso**;
+endif
+
+:Gauge con %;
+:Badge de sesgo con color;
+:KPIs: ratio promedio · total tareas;
+:Mensaje contextual explicativo;
 
 stop
 

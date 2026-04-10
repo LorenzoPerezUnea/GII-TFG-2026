@@ -1,4 +1,4 @@
-@startuml CU15_RiesgoProyecto
+@startuml CU15_Retrabajo
 !theme plain
 skinparam backgroundColor #07090F
 skinparam defaultFontColor #E2E8F5
@@ -8,40 +8,33 @@ skinparam ActivityBackgroundColor #141824
 skinparam ActivityDiamondBackgroundColor #0D1018
 skinparam ActivityDiamondBorderColor #38BDF8
 
-title CU-15 · Consultar Riesgo de Proyecto
+title CU-15 · Consultar Tasa de Retrabajo
 
 start
 
 :CU-01 (JWT válido);
-:Actor en **/métricas** selecciona proyecto;
+:Métrica disponible en **/métricas**
+ (también cargada en CU-02 para panel de salud);
 
-:verify_project_scope(cu, project_id);
+:GET /metrics/rework-rate
+ [?project_id & employee_id & root_only];
 
-if (¿Fuera de scope?) then (SÍ)
-  :HTTP 403;
-  stop
-endif
+:ReworkRateService.calculate()
+ 1. Obtiene tareas cerradas en scope
+ 2. get_tasks_reopened() analiza
+    mail_tracking_value:
+    tarea reabierta = cerrada → abierta en historial;
 
-:GET /metrics/risk-index?project_id=X
- [&root_only];
+:rework_rate = (reabiertos / cerradas) × 100;
 
-:RiskIndexService.calculate()
- Tareas abiertas con date_deadline:
- → En riesgo si:
-   · date_deadline < hoy (vencida), O
-   · elapsed/total ≥ 80% del plazo
-     desde date_assign;
-
-:risk_index = (en_riesgo / abiertas) × 100;
-
-:PieChart: En riesgo vs En plazo;
+:PieChart: Reabiertos vs OK;
 
 :KPIs:
-· Índice de riesgo %
-· Tareas en riesgo
-· Total tareas abiertas;
+· Tasa de retrabajo %
+· Tareas reabiertos
+· Total cerradas;
 
-:Semáforo: < 20% bajo · 20-50% medio · > 50% alto;
+:Semáforo: < 8% verde · 8-15% naranja · > 15% rojo;
 
 stop
 

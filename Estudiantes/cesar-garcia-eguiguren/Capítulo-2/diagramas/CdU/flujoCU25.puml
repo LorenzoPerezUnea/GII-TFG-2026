@@ -1,4 +1,4 @@
-@startuml CU25_BusquedaGlobal
+@startuml CU25_LineasCliente
 !theme plain
 skinparam backgroundColor #07090F
 skinparam defaultFontColor #E2E8F5
@@ -8,50 +8,30 @@ skinparam ActivityBackgroundColor #141824
 skinparam ActivityDiamondBackgroundColor #0D1018
 skinparam ActivityDiamondBorderColor #38BDF8
 
-title CU-25 · Realizar Búsqueda Global
+title CU-25 · Consultar Líneas Analíticas de Cliente
 
 start
 
-:CU-01 (JWT válido);
-:Actor navega a **/buscar**
-(o atajo en la barra lateral);
+:CU-01 (JWT válido, role = director);
 
-:Actor escribe en el campo de búsqueda;
+:Actor en CU-24 hace click en
+ "Ver Detalles" de un cliente;
 
-if (¿Menos de 2 caracteres?) then (SÍ)
-  :EmptyState "Escribe al menos 2 caracteres";
-  stop
-endif
+:GET /metrics/profitability/per-client/{id}/lines
+ [?date_from & date_to & project_id & manager_id];
 
-:Debounce 350ms;
+:Devuelve account_analytic_line de todos
+ los proyectos del cliente (partner_id)
+ separadas en:
+ · incomes: amount >= 0
+ · expenses: amount < 0;
 
-:GET /search/?q=texto&entity=all
- [?entity = tasks|projects|employees];
+:Panel con dos tablas:
+ **Ingresos**: fecha | nombre | importe | horas | project_id
+ **Gastos**: fecha | nombre | importe | horas | project_id;
 
-if (¿Responsable?) then (SÍ)
-  :Filtra por project_ids, employee_ids del JWT
-   (lógica en backend);
-endif
-
-:Resultados agrupados (máx 10 por tipo):
- · Tareas (por nombre o código)
- · Proyectos (por nombre JSONB o código)
- · Empleados (por nombre);
-
-if (¿Total == 0?) then (SÍ)
-  :EmptyState "Sin resultados para ...";
-  stop
-endif
-
-:Actor puede filtrar por tipo de entidad
- [Todos][Tareas][Proyectos][Empleados];
-
-if (¿Click en resultado?) then (Tarea)
-  :Navega a CU-11 /tareas/{id};
-else if (¿Click en resultado?) then (Proyecto)
-  :Navega a CU-09 /proyectos/{id};
-else (Empleado)
-  :Navega a CU-05 /empleados/{id};
+if (¿Sin líneas?) then (SÍ)
+  :Tablas vacías;
 endif
 
 stop
