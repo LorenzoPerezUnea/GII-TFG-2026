@@ -1,4 +1,4 @@
-@startuml CU03_Manager
+@startuml CU03_ResumenEmpleado
 !theme plain
 skinparam backgroundColor #07090F
 skinparam defaultFontColor #E2E8F5
@@ -8,76 +8,79 @@ skinparam ActivityBackgroundColor #141824
 skinparam ActivityDiamondBackgroundColor #0D1018
 skinparam ActivityDiamondBorderColor #38BDF8
 skinparam NoteFontColor #07090F
-title CU-03 · Consultar Panel Manager
+title CU-03 · Consultar Resumen de Empleado
 
 start
 
 :CU-01 (JWT válido);
-:Actor navega a **/manager**;
+:Actor navega a **/empleados/{id}**
+(desde CU-04, CU-03 o CU-07);
 
-:Actor puede filtrar por **departamento** (select);
+:verify_employee_scope(cu, employee_id);
 
-:GET /dashboards/summary/manager [?department_id];
-
-note right
-  Parámetros posibles:
-  department_id, page, page_size,
-  sort_by, sort_order, status
-end note
-
-if (¿Responsable?) then (SÍ)
-  :Filtra automáticamente por
-   employee_ids y department_ids del JWT;
-else (Director)
-  :Datos globales;
+if (¿Empleado fuera del scope?) then (SÍ)
+  :HTTP 403 — Acceso denegado;
+  stop
+else (EN SCOPE)
 endif
 
-:Extrae team_summary:
-· total_employees
-· overloaded_count
-· underloaded_count
-· without_tasks_count;
+fork
+  :GET /employees/{id};
+fork again
+  :GET /dashboards/summary/employee/{id}
+   → WorkloadService(detailed=True):
+     pending_tasks con fechas, is_overdue
+   → WIPService: wip_count, status
+   → ProductivityService(últimos 30d);
+end fork
 
-:Renderiza **5 botones de estado clicables**
- con contador por categoría:
- Total · Sobrecargado · Normal · Subcargado · Sin tareas;
+:Cabecera:
+· Avatar inicial (primera letra del nombre)
+· Nombre, cargo, departamento, email
+· Coste/h · Badge workload (sobrecargado/normal/subcargado);
 
-:Card "Empleados más cargados":
- top_overloaded (top 5 por workload%)
- → enlace a CU-05 por empleado;
+:4 KPIs:
+· Tareas pendientes + horas pendientes (WorkloadService)
+· Vencidas sin cerrar (filtradas client-side de wl.pending_tasks)
+· WIP actual (WIPService)
+· Productividad 30d (ProductivityService);
 
-:Card "Distribución por estados":
- BarChart horizontal (Recharts) con
- estados vs count — barras clicables;
+:Tarjeta "Asignadas hoy"
+ — filtra client-side: isToday(task.date_assign)
+ → click navega a
+   /tareas/filtro?status=pending&date_assign={hoy}&employee_id={id};
 
-if (¿Actor hace clic en botón/barra de estado?) then (SÍ)
-  :Determina estado seleccionado
-   (all | sobrecargado | normal | subcargado | without_tasks);
+:Tarjeta "Vencidas sin cerrar"
+ — filtra client-side: task.is_overdue == true
+ → click navega a
+   /tareas/filtro?status=overdue&employee_id={id};
 
-  :GET /dashboards/summary/manager
-   ?status=<estado>&page=<n>
-   &page_size=12&sort_by=<col>&sort_order=<dir>;
+:Actor selecciona pestaña de tareas;
 
-  :Despliega **tabla de carga paginada**
-   (12 por página, ordenable):
-   Empleado | Departamento | Tareas pend.
-   H. pend. | Barra carga% | Badge estado;
+if (Pestaña) then (**Pendientes**)
+  :<<extend>> CU-10
+  GET /employees/{id}/pending-tasks
+  [?date_from&date_to];
+else if (Pestaña) then (**Completadas**)
+  :<<extend>> CU-10
+  GET /employees/{id}/completed-tasks
+  [?date_from&date_to];
+else if (Pestaña) then (**Asignadas**)
+  :<<extend>> CU-10
+  GET /employees/{id}/assigned-tasks
+  [?date_from&date_to]
+  + filtro local: Todas/Abiertas/Cerradas;
+else (**Responsable**)
+  :<<extend>> CU-10
+  GET /employees/{id}/responsible-tasks
+  [?date_from&date_to];
+endif
 
-  :Paginación server-side ← /team_workload_pages;
-
-  if (¿Click en fila de empleado?) then (SÍ)
-    :Navega a CU-05 /empleados/{employee_id};
-  endif
-
-  :Botón "Ocultar lista" → colapsa la tabla;
+if (¿Click en tarea?) then (SÍ)
+  :Navega a CU-11 /tareas/{id};
 endif
 
 stop
 
-note right
-  ⚠ No existe radar ni pestañas Ejecutivo/Equipo.
-  La UI usa botones de estado + BarChart
-  + tabla condicional.
-end note
 
 @enduml

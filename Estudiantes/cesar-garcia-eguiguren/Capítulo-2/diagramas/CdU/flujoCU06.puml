@@ -1,4 +1,4 @@
-@startuml CU06_ListarDepartamentos
+@startuml CU06_ListarProyectos
 !theme plain
 skinparam backgroundColor #07090F
 skinparam defaultFontColor #E2E8F5
@@ -8,34 +8,34 @@ skinparam ActivityBackgroundColor #141824
 skinparam ActivityDiamondBackgroundColor #0D1018
 skinparam ActivityDiamondBorderColor #38BDF8
 
-title CU-06 · Listar Departamentos
+title CU-06 · Listar Proyectos
 
 start
 
 :CU-01 (JWT válido);
-:Actor navega a **/departamentos**;
+:Actor navega a **/proyectos**;
 
-:GET /departments/
- ?page&page_size&search&sort_by&sort_order;
+:GET /projects/;
 
 if (¿Responsable?) then (SÍ)
-  :Filtra: Department.id IN (department_ids del JWT);
+  :Filtra: Project.id IN (project_ids del JWT);
 else (Director)
   :Sin filtro adicional;
 endif
 
-if (¿Sin departamentos?) then (SÍ)
-  :EmptyState "Sin departamentos";
+if (¿Sin proyectos?) then (SÍ)
+  :EmptyState "Sin proyectos";
   stop
 endif
 
 :Cuadrícula de tarjetas:
-· Nombre del departamento
-· Nombre del manager (si existe)
-· Nombre completo jerárquico;
+· Nombre del proyecto
+· Nombre del cliente (partner_name)
+· Código (code)
+· Badge ID;
 
 if (¿Click en tarjeta?) then (SÍ)
-  :Navega a CU-07 /departamentos/{id};
+  :Navega a CU-09 /proyectos/{id};
 endif
 
 stop

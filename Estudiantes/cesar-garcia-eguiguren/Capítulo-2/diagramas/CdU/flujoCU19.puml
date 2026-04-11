@@ -1,4 +1,4 @@
-@startuml CU19_TiempoPorEstado
+@startuml CU19_TareasCanceladas
 !theme plain
 skinparam backgroundColor #07090F
 skinparam defaultFontColor #E2E8F5
@@ -8,32 +8,30 @@ skinparam ActivityBackgroundColor #141824
 skinparam ActivityDiamondBackgroundColor #0D1018
 skinparam ActivityDiamondBorderColor #38BDF8
 
-title CU-19 · Consultar Tiempo por Estado
+title CU-19 · Consultar Tareas Canceladas
 
 start
 
 :CU-01 (JWT válido);
 :Actor en **/métricas**;
 
-:GET /metrics/state-time
- [?project_id & employee_id & root_only];
+:GET /metrics/cancelled-tasks
+ [?project_id & date_from & date_to & root_only];
 
-:StateTimeService.calculate()
- Por cada tarea en scope:
-  get_stage_changes() analiza mail_tracking_value
-  → horas entre cambios consecutivos de etapa
-  → acumula en {stage_id: [horas]};
+:CancelledTasksService.calculate()
+ total: todas las tareas en scope
+ canceladas: tareas cuya etapa.name == "Cancelado"
+  (comparación case-insensitive);
 
-if (¿Sin datos de tracking?) then (SÍ)
-  :Tabla vacía "Sin datos";
-  stop
-endif
+:cancelled_pct = (canceladas / total) × 100;
 
-:Obtiene nombres de etapas
- (TaskStage.id → name);
+:KPIs:
+· Porcentaje canceladas
+· Número de canceladas
+· Total tareas;
 
-:Tabla ordenada por horas medias (desc):
- Etapa | Horas medias | Nº tareas;
+:Semáforo referencial:
+< 5% verde · 5-10% naranja · > 10% rojo;
 
 stop
 

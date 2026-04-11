@@ -1,4 +1,4 @@
-@startuml CU23_Asistencia
+@startuml CU23_Rentabilidad
 !theme plain
 skinparam backgroundColor #07090F
 skinparam defaultFontColor #E2E8F5
@@ -7,60 +7,90 @@ skinparam ActivityBorderColor #1E2840
 skinparam ActivityBackgroundColor #141824
 skinparam ActivityDiamondBackgroundColor #0D1018
 skinparam ActivityDiamondBorderColor #38BDF8
-
-title CU-23 · Consultar Asistencia vs Imputaciones
+skinparam NoteFontColor #07090F
+title CU-23 · Consultar Rentabilidad Financiera (Director exclusivo)
 
 start
 
-:CU-01 (JWT válido);
-:Actor navega a **/asistencia**;
+:<<include>> CU-01 (JWT válido);
 
-:Rango por defecto: mes actual;
-
-:Actor configura filtros:
- · Rango de fechas (shortcuts: Este mes / 30d / 3m)
- · Modo: [Equipo global] | [Por responsable] (solo Director);
-
-if (Modo == Equipo global) then (SÍ)
-  :GET /employees/attendance/comparison
-   ?date_from&date_to [&department_id];
-else (Por responsable)
-  :Actor selecciona manager del select
-   (GET /employees/managers/list);
-  if (¿Manager seleccionado?) then (NO)
-    :Mensaje "Selecciona un responsable";
-    stop
-  endif
-  :GET /employees/attendance/manager/{id}
-   ?date_from&date_to;
+if (¿role == "director"?) then (NO)
+  :ProtectedRoute (frontend) muestra
+   pantalla "Acceso restringido";
+  :require_director (backend) devuelve HTTP 403;
+  stop
 endif
 
-:Calcular por empleado:
- attendance_hours (hr_attendance)
- timesheet_hours (account_analytic_line)
- diff = timesheet - attendance
- coverage_pct = (timesheet / attendance) × 100;
+:Actor navega a **/rentabilidad**;
+:Actor selecciona rango de fechas;
+:Actor selecciona modo de filtro;
 
-:4 KPIs (si hay datos):
-· Horas fichadas · Horas imputadas
-· Diferencia total · Empleados con alerta;
+if (Modo filtro) then (**Global**)
+  :Sin filtro adicional;
+else if (Modo filtro) then (**Por proyecto**)
+  :Actor selecciona proyecto (select);
+  :?project_id=X;
+else (**Por responsable**)
+  :Actor selecciona manager (select)
+   o hace click en botón de la lista de managers;
+  :?manager_id=X;
+  :Aparece botón "Ver detalle →";
+endif
 
-:Gráfico de barras agrupadas: fichadas vs imputadas
- (top 15 empleados por horas fichadas);
+fork
+  :GET /metrics/profitability/summary
+   ?date_from&date_to;
+  :Totales globales:
+   income, expense, net, total_hours
+   Conteo proyectos: ganancia/neutro/perdida;
+fork again
+  :GET /metrics/profitability/per-project
+   [?project_id & manager_id & dates];
+fork again
+  :GET /metrics/profitability/per-client
+   [?project_id & manager_id & dates];
+end fork
 
-:Tabla: Empleado | Depto | Fichadas | Imputadas
- | Diferencia | Cobertura% | Badge;
+note right
+  Fuente: account_analytic_line.amount
+  positivo = ingreso
+  negativo = gasto
+end note
 
-:Badge cobertura:
- ≥ 95% OK (verde) · ≥ 80% Revisar · < 80% Alerta (rojo);
+:4 KPIs: Ingresos | Gastos (abs) | Neto | Rentabilidad %;
 
-if (¿Click en empleado de la tabla?) then (SÍ)
-  :GET /employees/attendance/{id}/daily
-   ?date_from&date_to
-   → Gráfico de barras y línea de diferencia
-   en panel expandido al pie de la página;
+:BarChart agrupado ingresos vs gastos por proyecto (top 12);
+:PieChart: Ganancia / Neutro / Pérdida (count por estado);
+
+:Pestaña **Por proyecto** → tabla con
+ income, expense, net, horas, rentabilidad%, badge;
+
+if (¿Click en "Ver Detalles" fila proyecto?) then (SÍ)
+  :<<extend>> CU-24
+   → GET /metrics/profitability/per-project/{id}/lines
+   → Panel de líneas analíticas ingresos/gastos;
+endif
+
+:Pestaña **Por cliente** → tabla agrupada
+ por partner_id;
+
+if (¿Click en "Ver Detalles" fila cliente?) then (SÍ)
+  :<<extend>> CU-25
+   → GET /metrics/profitability/per-client/{id}/lines
+   → Panel de líneas analíticas por cliente;
+endif
+
+if (Modo == Por responsable AND manager seleccionado) then (SÍ)
+  if (¿Click "Ver detalle →"?) then (SÍ)
+    :ManagerPanel:
+     GET /metrics/profitability/manager/{id}
+     → tabla de proyectos + KPIs del responsable
+     → BarChart ingresos vs gastos top-10;
+    :Botón "← Volver" para regresar a la vista principal;
+  endif
 endif
 
 stop
+
 
 @enduml

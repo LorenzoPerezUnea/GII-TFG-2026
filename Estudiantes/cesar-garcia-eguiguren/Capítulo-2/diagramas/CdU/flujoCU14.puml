@@ -1,4 +1,4 @@
-@startuml CU14_WIP
+@startuml CU14_RiesgoProyecto
 !theme plain
 skinparam backgroundColor #07090F
 skinparam defaultFontColor #E2E8F5
@@ -8,52 +8,40 @@ skinparam ActivityBackgroundColor #141824
 skinparam ActivityDiamondBackgroundColor #0D1018
 skinparam ActivityDiamondBorderColor #38BDF8
 
-title CU-14 · Consultar WIP de Empleado
+title CU-14 · Consultar Riesgo de Proyecto
 
 start
 
 :CU-01 (JWT válido);
-:Actor en /métricas selecciona empleado
- en panel de parámetros;
+:Actor en **/métricas** selecciona proyecto;
 
-:verify_employee_scope(cu, employee_id);
+:verify_project_scope(cu, project_id);
 
 if (¿Fuera de scope?) then (SÍ)
   :HTTP 403;
   stop
 endif
 
-:Actor hace click en tarjeta "WIP";
+:GET /metrics/risk-index?project_id=X
+ [&root_only];
 
-:GET /metrics/wip?employee_id=X [&root_only]
- → WIPService.calculate();
+:RiskIndexService.calculate()
+ Tareas abiertas con date_deadline:
+ → En riesgo si:
+   · date_deadline < hoy (vencida), O
+   · elapsed/total ≥ 80% del plazo
+     desde date_assign;
 
-:get_user_id_for_employee(db, employee_id);
+:risk_index = (en_riesgo / abiertas) × 100;
 
-if (¿Sin user_id vinculado?) then (SÍ)
-  :WIPResponse(wip_count=0, status="optimo",
-   recommendation="Sin tareas asignadas");
-  stop
-endif
+:PieChart: En riesgo vs En plazo;
 
-:COUNT tareas abiertas asignadas al user_id
- (JOIN TaskAssignment + open_stage_ids_subq)
- [con root_only si aplicable];
+:KPIs:
+· Índice de riesgo %
+· Tareas en riesgo
+· Total tareas abiertas;
 
-if (wip_count ≤ 3) then
-  :Status: **ÓPTIMO** (verde)
-   Rec: "Carga óptima de trabajo";
-else if (wip_count ≤ 5) then
-  :Status: **ACEPTABLE** (amarillo)
-   Rec: "Considera priorizar tareas";
-else
-  :Status: **SOBRECARGADO** (rojo)
-   Rec: "Cierra tareas antes de comenzar nuevas";
-endif
-
-:KPI numérico de wip_count;
-:Badge de estado;
-:Texto de recomendación;
+:Semáforo: < 20% bajo · 20-50% medio · > 50% alto;
 
 stop
 

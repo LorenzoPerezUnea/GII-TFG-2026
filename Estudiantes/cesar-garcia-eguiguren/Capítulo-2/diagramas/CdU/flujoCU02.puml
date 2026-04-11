@@ -1,4 +1,5 @@
-@startuml CU02_Overview
+
+@startuml CU02_ListarEmpleados
 !theme plain
 skinparam backgroundColor #07090F
 skinparam defaultFontColor #E2E8F5
@@ -7,75 +8,46 @@ skinparam ActivityBorderColor #1E2840
 skinparam ActivityBackgroundColor #141824
 skinparam ActivityDiamondBackgroundColor #0D1018
 skinparam ActivityDiamondBorderColor #38BDF8
+skinparam NoteFontColor #07090F
 
-title CU-02 · Visualizar Overview del Sistema
+title CU-02 · Listar y Buscar Empleados
 
 start
 
 :CU-01 (JWT válido);
+:Actor navega a **/empleados**;
 
-fork
-  :GET /dashboards/overview;
-fork again
-  :GET /charts/task-distribution;
-fork again
-  :GET /charts/productivity-trend?days=14;
-fork again
-  :GET /dashboards/summary/manager;
-fork again
-  :GET /metrics/compliance;
-fork again
-  :GET /metrics/rework-rate;
-fork again
-  :GET /metrics/lead-time;
-end fork
+:GET /employees/
+ ?page&page_size=50
+ &search&department_id&active
+ &sort_by&sort_order;
 
-if (¿/dashboards/overview falla?) then (SÍ)
-  :ErrorState con botón Reintentar;
-  stop
-else (NO)
-endif
-
-if (¿Actor es Responsable?) then (SÍ)
-  :Filtra datos por project_ids y employee_ids del JWT
-  (lógica en backend);
+if (¿Responsable?) then (SÍ)
+  :Aplica filtro: Employee.id IN (employee_ids del JWT);
 else (Director)
-  :Datos globales sin filtro;
+  :Sin filtro adicional;
 endif
 
-:Renderiza **4 KPIs clicables**
-· Proyectos activos → /proyectos
-· Empleados activos → /empleados
-· Tareas abiertas (+creadas esta semana) → /tareas?status=pending
-· Tareas vencidas → /tareas?status=overdue;
+:Renderiza tabla paginada (50/página):
+· Nombre, Departamento, Cargo
+· Email, Coste/h, Badge activo/inactivo;
 
-if (¿overdue_tasks > 0?) then (SÍ)
-  :Banner **rojo** "X tareas vencidas" → /tareas?status=overdue;
+
+:Actor filtra por departamento (select);
+note right: ?department_id=X
+
+:Actor activa/desactiva toggle "activos";
+note right: ?active=true/false
+
+:Ordenación global server-side:
+ sort_by ∈ {name, department_name,
+              job_title, hourly_cost};
+
+if (¿Click en fila?) then (SÍ)
+  :Navega a CU-05 /empleados/{id};
 endif
 
-if (¿overloaded_employees.length > 0?) then (SÍ)
-  :Banner **amarillo** con nombres → /manager;
-endif
-
-:Gráfico de área — actividad 14 días
- (horas imputadas por día de productivity-trend);
-
-:Panel de estado operativo
-· Cumplimiento (de /metrics/compliance)
-· Retrabajo (de /metrics/rework-rate)
-· Lead Time (de /metrics/lead-time)
-· Distribución equipo (normal/sobrecargado/subcargado/sin tareas);
-
-:Distribución de tareas por etapa
-(barras de progreso coloreadas, de /charts/task-distribution);
-
-:Acceso rápido (8 items con icono + descripción):
-· Manager (/manager)
-· Proyectos (/proyectos)
-· Departamentos (/departamentos)
-· Métricas (/métricas)
-· Asistencia (/asistencia)
-· Rentabilidad (/rentabilidad) — solo Director;
+:Paginación → carga página siguiente;
 
 stop
 

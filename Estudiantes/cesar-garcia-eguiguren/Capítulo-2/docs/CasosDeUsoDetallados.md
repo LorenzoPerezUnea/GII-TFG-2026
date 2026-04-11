@@ -1,588 +1,517 @@
 # Casos de Uso Detallados
 
 ## CU-01 – Autenticarse en el Sistema
- 
+
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
 | **Precondición** | El usuario tiene credenciales válidas (login y contraseña) en `res_users` con un `hr_employee` activo vinculado en Odoo. |
-| **Postcondición** | JWT almacenado en `localStorage`, cabecera `Authorization: Bearer` inyectada en el cliente Axios. Usuario redirigido a CU-02. |
- 
-![Diagrama de flujo de autenticación](../imagenes/CdU/flujoCU01.png)
- 
+| **Postcondición** | JWT almacenado en `localStorage`, cabecera `Authorization: Bearer` inyectada en el cliente Axios. Usuario redirigido a `/`. |
+
+![Diagrama de flujo](../imagenes/CdU/flujoCU01.png)
+
 **Flujo principal:**
 1. El actor navega a `/login` e introduce su **usuario** (login) y **contraseña**.
-2. `POST /auth/token {username, password}` → el sistema valida las credenciales contra `res_users`.
-3. Si las credenciales son correctas, el sistema localiza el empleado activo vinculado (`res_users.id` → `hr_employee.user_id`).
-4. `resolve_role_and_scope()` determina el rol: si `employee.parent_id == employee.id` → `director`; si gestiona departamentos o proyectos → `responsable`; en otro caso → `empleado` (sin acceso).
-5. Para el responsable, se calcula el scope mediante CTE recursivo: `employee_ids`, `department_ids`, `project_ids`.
-6. Se emite JWT `HS256` (8 h) con `{user_id, employee_id, role, employee_ids, department_ids, project_ids}`.
-7. El frontend almacena el token y redirige a `/`.
- 
+2. `POST /auth/token {username, password}` → valida credenciales contra `res_users`.
+3. Localiza el empleado activo vinculado (`res_users.id` → `hr_employee.user_id`).
+4. `resolve_role_and_scope()` determina rol: `employee.parent_id == employee.id` → `director`; gestiona depts/proyectos → `responsable`; otro → `empleado` (sin acceso).
+5. Para responsable: scope vía CTE recursivo → `employee_ids`, `department_ids`, `project_ids`.
+6. JWT `HS256` (8 h) con `{user_id, employee_id, role, employee_ids, department_ids, project_ids}`.
+7. Frontend almacena token y redirige a `/`.
+
 **Flujos alternativos:**
-- `FA-01`: Credenciales incorrectas (usuario o contraseña) → HTTP 401, mensaje de error "Usuario o contraseña incorrectos", el actor permanece en el login.
-- `FA-02`: Sin empleado activo para el `user_id` autenticado → HTTP 404, el actor permanece en el login.
-- `FA-03`: Rol `"empleado"` → acceso denegado, mensaje informativo "Este usuario no tiene acceso al sistema de analítica".
-- `FA-04`: Token expirado en sesión activa → interceptor Axios detecta HTTP 401, limpia `localStorage` y redirige a `/login`.
- 
- 
-**Relaciones:** CU-01 es **precondición** del resto de casos de uso (sesión/JWT), se ejecuta una vez para iniciar sesión.
+- `FA-01`: Credenciales incorrectas → HTTP 401, permanece en login.
+- `FA-02`: Sin empleado activo → HTTP 404, permanece en login.
+- `FA-03`: Rol `"empleado"` → acceso denegado.
+- `FA-04`: Token expirado → interceptor limpia localStorage, redirige a `/login`.
+
+**Relaciones:** Precondición de todos los demás CU.
 
 ---
 
-## CU-02 – Visualizar Overview del Sistema
+## CU-02 – Listar y Buscar Empleados
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
 | **Precondición** | CU-01 completado. |
-| **Postcondición** | El actor dispone de una visión consolidada del estado del sistema y puede navegar a cualquier otro CU. |
+| **Postcondición** | El actor localiza el empleado y puede navegar a CU-03. |
 
-![Diagrama de flujo de overview](../imagenes/CdU/flujoCU02.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU02.png)
 
 **Flujo principal:**
-1. Al navegar a `/`, el sistema lanza en paralelo: `GET /dashboards/overview`, `/charts/task-distribution`, `/charts/productivity-trend?days=14`, `/dashboards/summary/manager`, `/metrics/compliance`, `/metrics/rework-rate`, `/metrics/lead-time`.
-2. Se muestran 4 KPIs clicables: proyectos activos, empleados activos, tareas abiertas (+creadas esta semana), tareas vencidas.
-3. Si hay tareas vencidas → banner de alerta rojo con enlace a CU-10 (`status=overdue`).
-4. Si hay empleados sobrecargados → banner amarillo con sus nombres y enlace a CU-03.
-5. Gráfico de área con la actividad de los últimos 14 días y panel de estado operativo (cumplimiento, retrabajo, lead time y distribución del equipo).
-6. Distribución de tareas por etapa con barras de progreso y sección de acceso rápido con enlaces a CU-03, CU-08, CU-04, CU-10, CU-22, CU-23.
-7. El Responsable recibe los datos filtrados por sus `project_ids` y `employee_ids`.
+1. `GET /employees/` con `page`, `page_size`, `search`, `department_id`, `active`, `sort_by`, `sort_order`.
+2. Tabla paginada (50/pág.): nombre, departamento, cargo, email, coste/h, badge activo/inactivo.
+3. Búsqueda por nombre (debounce 300 ms). Filtro por departamento. Toggle activos.
+4. Ordenación global server-side.
+5. Click en fila → CU-03.
+6. Responsable: solo `employee_ids` del JWT.
 
-**Flujos alternativos:**
-- `FA-01`: Alguna petición falla → `ErrorState` con botón Reintentar.
-- `FA-02`: Sin tareas ni proyectos → KPIs a 0.
-
-**Relaciones:** `<<include>>` CU-13 (cumplimiento), CU-16 (retrabajo), CU-18 (lead time). Navega a CU-03, CU-04, CU-08, CU-10.
+**Relaciones:** Navega a CU-03.
 
 ---
 
-## CU-03 – Consultar Panel Manager
+## CU-03 – Consultar Resumen de Empleado
+
+| Campo | Valor |
+|---|---|
+| **Actores** | Director, Responsable |
+| **Precondición** | CU-01 completado. Empleado en el alcance del actor. |
+| **Postcondición** | El actor conoce carga, WIP, productividad y tareas del empleado. |
+
+![Diagrama de flujo](../imagenes/CdU/flujoCU03.png)
+
+**Flujo principal:**
+1. Accede a `/empleados/{id}` (desde CU-02 o CU-05).
+2. Verifica `verify_employee_scope`. Carga en paralelo: `GET /employees/{id}` y `GET /dashboards/summary/employee/{id}`.
+3. Cabecera: avatar, nombre, cargo, departamento, email, coste/h, badge workload.
+4. 4 KPIs: pendientes + horas · vencidas sin cerrar · WIP · productividad 30d.
+5. Sección "Hoy": tarjetas clickables → CU-08 con filtros pre-rellenados.
+6. 4 pestañas de tareas vía `GET /tasks/filter`:
+   - **Pendientes**: `?employee_id={id}&status=pending`.
+   - **Completadas**: `?employee_id={id}&status=completed`.
+   - **Asignadas**: `?employee_id={id}` + toggle Todas/Abiertas/Cerradas.
+   - **Responsable**: `?employee_id={id}&responsable=true`.
+7. Click en tarea → CU-09.
+
+**Flujos alternativos:**
+- `FA-01`: Fuera del scope → HTTP 403.
+- `FA-02`: Sin `user_id` → pestañas vacías, workload y WIP a 0.
+
+**Relaciones:** `<<extend>>` por CU-08. Navega a CU-09.
+
+---
+
+## CU-04 – Listar Departamentos
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
 | **Precondición** | CU-01 completado. |
-| **Postcondición** | El actor conoce el estado operativo del equipo y puede acceder al detalle de cada empleado. |
+| **Postcondición** | El actor localiza el departamento y navega a CU-05. |
 
-![Diagrama de flujo del panel manager](../imagenes/CdU/flujoCU03.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU04.png)
 
 **Flujo principal:**
-1. El actor navega a `/manager`. Puede filtrar por departamento mediante un selector.
-2. El sistema carga: `GET /dashboards/summary/manager` y `GET /departments/`.
-3. Se muestran 5 botones clicables por estado: Total · Sobrecargado · Normal · Subcargado · Sin tareas, con el recuento de cada uno.
-4. Card "Empleados más cargados": lista con los 5 empleados con mayor porcentaje de carga y enlace a CU-05.
-5. Card "Distribución por estados": gráfico de barras horizontal (Recharts) con los estados vs. su recuento. Las barras son clicables.
-6. Al pinchar un botón o barra de estado, el sistema carga la tabla paginada llamando a `GET /dashboards/summary/manager?status=<estado>&page=<n>&page_size=12&sort_by=<col>&sort_order=<dir>`. La tabla muestra: Empleado · Departamento · Tareas pendientes · Horas pendientes · Barra de carga% · Badge estado. Click en fila → CU-05.
-7. El Responsable recibe datos filtrados automáticamente por sus `employee_ids` y `department_ids`.
+1. `GET /departments/` → departamentos activos.
+2. Responsable: solo `department_ids`.
+3. Cuadrícula de tarjetas: nombre, manager, nombre jerárquico.
+4. Click → CU-05.
 
 **Flujos alternativos:**
-- `FA-01`: Sin empleados en el scope → tabla vacía.
-
-**Relaciones:** `<<include>>` CU-06 (lista de departamentos para filtro). Navega a CU-05.
-
----
-
-## CU-04 – Listar y Buscar Empleados
-
-| Campo | Valor |
-|---|---|
-| **Actores** | Director, Responsable |
-| **Precondición** | CU-01 completado. |
-| **Postcondición** | El actor localiza el empleado buscado y puede navegar a CU-05. |
-
-![Diagrama de flujo de listar empleados](../imagenes/CdU/flujoCU04.png)
-
-**Flujo principal:**
-1. `GET /employees/` con parámetros `page`, `page_size`, `search`, `department_id`, `active`, `sort_by`, `sort_order`.
-2. Tabla paginada (50/página): nombre, departamento, cargo, email, coste/h, badge activo/inactivo.
-3. Búsqueda por nombre con debounce de 300 ms. Filtro por departamento (select). Toggle para mostrar solo activos.
-4. Ordenación global server-side por cualquier columna (nombre, departamento, cargo, coste/h).
-5. Click en fila → CU-05.
-6. El Responsable solo visualiza empleados incluidos en su `employee_ids`.
+- `FA-01`: Sin departamentos → estado vacío.
 
 **Relaciones:** Navega a CU-05.
 
 ---
 
-## CU-05 – Consultar Resumen de Empleado
+## CU-05 – Consultar Resumen de Departamento
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
-| **Precondición** | CU-01 completado. El empleado está en el alcance del actor. |
-| **Postcondición** | El actor conoce el estado completo del empleado: carga, WIP, productividad y tareas. |
+| **Precondición** | CU-01. Departamento en el alcance. |
+| **Postcondición** | El actor conoce la carga del departamento y navega a empleados. |
 
-![Diagrama de flujo de resumen de empleado](../imagenes/CdU/flujoCU05.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU05.png)
 
 **Flujo principal:**
-1. El actor accede a `/empleados/{id}` (desde CU-04, CU-03 o CU-07).
-2. El sistema verifica `verify_employee_scope`. Carga en paralelo: `GET /employees/{id}` y `GET /dashboards/summary/employee/{id}` (que internamente ejecuta WorkloadService, WIPService y ProductivityService).
-3. Cabecera con avatar de inicial, nombre, cargo, departamento, email, coste/h y badge de estado de carga.
-4. 4 KPIs: tareas pendientes + horas pendientes · vencidas sin cerrar · WIP actual · productividad últimos 30d.
-5. Sección "Hoy": tarjeta de tareas asignadas hoy (filtradas client-side por `isToday(date_assign)`) y tarjeta de vencidas sin cerrar (filtradas por `is_overdue`). Cada tarjeta es clickable y abre CU-10 con filtros pre-rellenados.
-6. Sección de tareas con cuatro pestañas, cada una ejecutando un endpoint diferente:
-   - **Pendientes**: `GET /employees/{id}/pending-tasks` con filtro de fecha opcional.
-   - **Completadas**: `GET /employees/{id}/completed-tasks` con filtro de fecha opcional.
-   - **Asignadas**: `GET /employees/{id}/assigned-tasks` con filtro de fecha y toggle Todas/Abiertas/Cerradas.
-   - **Responsable**: `GET /employees/{id}/responsible-tasks` con filtro de fecha opcional.
-7. Click en tarea → CU-11.
+1. Accede a `/departamentos/{id}` (desde CU-04).
+2. Verifica `verify_department_scope`. Carga: `GET /departments/{id}` y `GET /departments/{id}/workload-summary`.
+3. Cabecera: nombre + manager.
+4. 4 KPIs: total · sobrecargados · subcargados · sin tareas.
+5. Banner rojo si hay sobrecargados.
+6. **Pestaña Carga**: tabla con workload por empleado. Click → CU-03.
+7. **Pestaña Empleados**: `GET /departments/{id}/employees`. Click → CU-03.
 
 **Flujos alternativos:**
-- `FA-01`: Empleado fuera del scope → HTTP 403.
-- `FA-02`: Empleado sin `user_id` vinculado → pestañas de asignadas/pendientes vacías, workload y WIP a 0.
+- `FA-01`: Fuera de scope → HTTP 403.
+- `FA-02`: Sin empleados → pestañas vacías.
 
-**Relaciones:** `<<extend>>` por CU-10 (listados de tareas contextuales). Navega a CU-11.
+**Relaciones:** Navega a CU-03.
 
 ---
 
-## CU-06 – Listar Departamentos
+## CU-06 – Listar Proyectos
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
 | **Precondición** | CU-01 completado. |
-| **Postcondición** | El actor localiza el departamento y puede navegar a CU-07. |
+| **Postcondición** | El actor localiza el proyecto y navega a CU-07. |
 
-![Diagrama de flujo de listar departamentos](../imagenes/CdU/flujoCU06.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU06.png)
 
 **Flujo principal:**
-1. `GET /departments/` → lista de departamentos activos.
-2. El Responsable solo visualiza los departamentos incluidos en su `department_ids`.
-3. Se muestra una cuadrícula de tarjetas con el nombre del departamento, el nombre del manager (si existe) y el nombre jerárquico completo.
-4. Click en tarjeta → CU-07.
+1. `GET /projects/` → proyectos activos.
+2. Responsable: solo `project_ids`.
+3. Cuadrícula de tarjetas: nombre, cliente, código.
+4. Click → CU-07.
 
 **Flujos alternativos:**
-- `FA-01`: Sin departamentos en el scope → estado vacío.
+- `FA-01`: Sin proyectos → estado vacío.
 
 **Relaciones:** Navega a CU-07.
 
 ---
 
-## CU-07 – Consultar Resumen de Departamento
+## CU-07 – Consultar Resumen de Proyecto
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
-| **Precondición** | CU-01 completado. El departamento está en el alcance del actor. |
-| **Postcondición** | El actor conoce el estado de carga del departamento y puede navegar a sus empleados. |
+| **Precondición** | CU-01. Proyecto en el alcance. |
+| **Postcondición** | El actor conoce eficiencia, riesgo, rentabilidad, tareas y equipo del proyecto. |
 
-![Diagrama de flujo de resumen de departamento](../imagenes/CdU/flujoCU07.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU07.png)
 
 **Flujo principal:**
-1. El actor accede a `/departamentos/{id}` (desde CU-06 o enlace en CU-03).
-2. El sistema verifica `verify_department_scope`. Carga en paralelo: `GET /departments/{id}` y `GET /departments/{id}/workload-summary`.
-3. Cabecera con nombre del departamento y manager.
-4. 4 KPIs: total empleados · sobrecargados · subcargados · sin tareas.
-5. Si hay empleados sobrecargados → banner rojo con sus nombres.
-6. **Pestaña Carga de trabajo**: tabla ordenable con nombre, tareas pendientes, horas pendientes, tareas completadas, barra de % de carga y badge de estado. Click en empleado → CU-05.
-7. **Pestaña Empleados**: `GET /departments/{id}/employees` → tabla con cargo, email, coste/h y badge activo. Click en empleado → CU-05.
+1. Accede a `/proyectos/{id}` (desde CU-06 o CU-24).
+2. Verifica `verify_project_scope`. Carga: `GET /projects/{id}`, `/dashboards/summary/project/{id}`, `/tasks/stages`.
+3. Cabecera: nombre, cliente, badges Rentable/Pérdidas y riesgo bajo/medio/alto.
+4. 4 KPIs: eficiencia · riesgo % · rentabilidad % · total tareas.
+5. Gráfico horas estimadas vs. reales.
+6. **Pestaña Tareas**: `GET /projects/{id}/tasks`. Click → CU-09.
+7. **Pestaña Equipo**: `GET /projects/{id}/employees`. Click → CU-03.
 
 **Flujos alternativos:**
-- `FA-01`: Responsable sin acceso al departamento → HTTP 403.
-- `FA-02`: Departamento sin empleados activos → pestañas vacías.
+- `FA-01`: Sin horas → rentabilidad y eficiencia a 0.
+- `FA-02`: Fuera de scope → HTTP 403.
 
-**Relaciones:** Navega a CU-05.
+**Relaciones:** Navega a CU-03 y CU-09.
 
 ---
 
-## CU-08 – Listar Proyectos
+## CU-08 – Listar Tareas
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
 | **Precondición** | CU-01 completado. |
-| **Postcondición** | El actor localiza el proyecto y puede navegar a CU-09. |
+| **Postcondición** | El actor localiza tareas y accede a CU-09. |
 
-![Diagrama de flujo de listar proyectos](../imagenes/CdU/flujoCU08.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU08.png)
 
 **Flujo principal:**
-1. `GET /projects/` → lista de proyectos activos.
-2. El Responsable solo visualiza los proyectos incluidos en su `project_ids`.
-3. Se muestra una cuadrícula de tarjetas con el nombre del proyecto, el cliente (`partner_name`) y el código.
-4. Click en tarjeta → CU-09.
+1. Tres contextos: Global (`/tareas`), desde CU-07 (`project_id`), desde CU-03 (`employee_id`).
+2. `GET /tasks/filter` con `status`, `stage_id`, `project_id`, `employee_id`, `date_from`, `date_to`, `date_assign`, `root_only`, `sort_by`, `sort_order`, `page`, `page_size`. `stage_id` tiene prioridad sobre `status`.
+3. Tabla paginada (25/pág.): nombre, etapa, horas est., deadline, fecha cierre, estado.
+4. Ordenación server-side. Click → CU-09.
+5. Responsable: restringido a `project_ids`.
 
 **Flujos alternativos:**
-- `FA-01`: Sin proyectos en el scope → estado vacío.
+- `FA-01`: Sin tareas → estado vacío.
+- `FA-02`: Proyecto fuera de scope → HTTP 403.
 
 **Relaciones:** Navega a CU-09.
 
 ---
 
-## CU-09 – Consultar Resumen de Proyecto
+## CU-09 – Consultar Detalle de Tarea
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
-| **Precondición** | CU-01 completado. El proyecto está en el alcance del actor. |
-| **Postcondición** | El actor conoce el estado completo del proyecto: eficiencia, riesgo, rentabilidad, tareas y equipo. |
-
-![Diagrama de flujo de resumen de proyecto](../imagenes/CdU/flujoCU09.png)
-
-**Flujo principal:**
-1. El actor accede a `/proyectos/{id}` (desde CU-08 o resultado de CU-25).
-2. El sistema verifica `verify_project_scope`. Carga en paralelo: `GET /projects/{id}`, `/dashboards/summary/project/{id}` y `/tasks/stages`.
-3. Cabecera con nombre, cliente y badges de estado: Rentable/Pérdidas (según `profitability_pct`) y nivel de riesgo bajo/medio/alto.
-4. 4 KPIs: índice de eficiencia · índice de riesgo % · rentabilidad % · total tareas.
-5. Gráfico de barras: horas estimadas vs. reales.
-6. **Pestaña Tareas**: `GET /projects/{id}/tasks` con paginación, filtro por estado (Todas/Pendientes) y por etapa. Click en tarea → CU-11.
-7. **Pestaña Equipo**: `GET /projects/{id}/employees` → empleados con horas imputadas y coste/h. Click en empleado → CU-05.
-
-**Flujos alternativos:**
-- `FA-01`: Sin horas imputadas → rentabilidad y eficiencia a 0.
-- `FA-02`: Responsable sin acceso al proyecto → HTTP 403.
-
-**Relaciones:** Navega a CU-05 y CU-11.
-
----
-
-## CU-10 – Listar Tareas
-
-| Campo | Valor |
-|---|---|
-| **Actores** | Director, Responsable |
-| **Precondición** | CU-01 completado. |
-| **Postcondición** | El actor localiza las tareas buscadas o accede al detalle (CU-11). |
-
-![Diagrama de flujo de listar tareas](../imagenes/CdU/flujoCU10.png)
-
-**Flujo principal:**
-1. Se ejecuta desde tres contextos:
-   - **Global** (`/tareas`): el actor configura filtros manualmente.
-   - **Desde CU-09**: `project_id` pre-rellenado.
-   - **Desde CU-05**: `employee_id` (y opcionalmente `status`) pre-rellenados.
-2. `GET /tasks/filter` con parámetros combinables: `status`, `stage_id`, `project_id`, `employee_id`, `date_from`, `date_to`, `date_assign`, `root_only`, `sort_by`, `sort_order`, `page`, `page_size`. Si `stage_id` está presente, tiene prioridad sobre `status`.
-3. Tabla paginada (25/página): nombre, etapa (badge), horas estimadas, deadline (rojo+⚠ si vencida y abierta), fecha cierre, estado (badge).
-4. Ordenación global server-side. Click en tarea → CU-11.
-5. El Responsable tiene sus tareas restringidas automáticamente a sus `project_ids`.
-
-**Flujos alternativos:**
-- `FA-01`: Sin tareas con los filtros aplicados → estado vacío con mensaje.
-- `FA-02`: Responsable filtrando por proyecto fuera de su scope → HTTP 403.
-
-**Relaciones:** Navega a CU-11.
-
----
-
-## CU-11 – Consultar Detalle de Tarea
-
-| Campo | Valor |
-|---|---|
-| **Actores** | Director, Responsable |
-| **Precondición** | CU-01 completado. La tarea pertenece a un proyecto en el alcance del actor. |
+| **Precondición** | CU-01. Tarea en proyecto del alcance. |
 | **Postcondición** | El actor conoce todos los datos de la tarea. |
 
-![Diagrama de flujo de detalle de tarea](../imagenes/CdU/flujoCU11.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU09.png)
 
 **Flujo principal:**
-1. `GET /tasks/{id}` → `TaskService.get_task_detail()` devuelve la ficha completa.
-2. Cabecera con nombre, badges de etapa, vencida (si aplica), subtarea (si `parent_id`) y número de subtareas.
-3. **Sección Información general**: proyecto (link a CU-09), deadline (rojo si vencida), fecha de cierre, fecha de asignación.
-4. **Sección Personas**: responsable como pill clickable (link a CU-05) y empleados asignados como pills clickables (links a CU-05).
-5. **Sección Horas** (solo si `planned_hours > 0`): KPIs de horas estimadas, invertidas y restantes; barra de progreso (roja si >100%); métrica de productividad `(estimadas/reales)×100`.
-6. **Sección Subtareas** (si las hay): lista de subtareas clickables, cada una abre CU-11 recursivamente.
-7. Si `parent_id` existe → enlace a la tarea padre (CU-11). Panel lateral con metadatos: ID, prioridad, kanban state.
+1. `GET /tasks/{id}` → `TaskService.get_task_detail()`.
+2. Cabecera: nombre, badges etapa/vencida/subtarea/nº subtareas.
+3. **Info general**: proyecto (→ CU-07), deadline, fecha cierre, fecha asignación.
+4. **Personas**: responsable pill (→ CU-03), asignados pills (→ CU-03).
+5. **Horas** (si `planned_hours > 0`): est./invertidas/restantes, barra progreso, productividad.
+6. **Subtareas**: clickables → CU-09 recursivo.
+7. Link a tarea padre si `parent_id`. Panel lateral: ID, prioridad, kanban state.
 
 **Flujos alternativos:**
-- `FA-01`: Tarea no encontrada → HTTP 404.
-- `FA-02`: Responsable con tarea fuera de sus proyectos → HTTP 403.
+- `FA-01`: No encontrada → HTTP 404.
+- `FA-02`: Fuera de scope → HTTP 403.
 
-**Relaciones:** Navega a CU-05, CU-09, CU-11 (recursivo en subtareas).
+**Relaciones:** Navega a CU-03, CU-07, CU-09 (recursivo).
 
 ---
 
-## CU-12 – Consultar Productividad
+## CU-10 – Consultar Productividad
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
 | **Precondición** | CU-01. |
-| **Postcondición** | El actor conoce la eficiencia de ejecución frente a la estimación. |
+| **Postcondición** | Conoce eficiencia de ejecución vs. estimación. |
 
-![Diagrama de flujo de productividad](../imagenes/CdU/flujoCU12.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU10.png)
 
 **Flujo principal:**
-1. El actor navega a `/métricas`. Al cargar la página se pre-cargan datos de soporte para filtros: `GET /employees/?page_size=200` y `GET /projects/`. Las métricas simples (cumplimiento, retrabajo, lead time) se cargan en bulk automáticamente.
-2. Al hacer click en la tarjeta "Productividad" se ejecuta `GET /metrics/productivity` con filtros opcionales por empleado, proyecto y rango de fechas.
-3. `ProductivityService.calculate()` obtiene tareas cerradas con `planned_hours > 0` y `actual_hours > 0`. Fórmula por tarea: `(planned / actual) × 100`.
-4. Gauge con % promedio y total de tareas analizadas; gráfico de barras horizontal con el top 8 de tareas.
-5. El Responsable sin filtros recibe el agregado ponderado de todos sus proyectos.
+1. En `/métricas`, click en tarjeta "Productividad".
+2. `GET /metrics/productivity` con filtros empleado, proyecto, fechas.
+3. Tareas cerradas con `planned_hours > 0` y `actual_hours > 0`. Fórmula: `(planned / actual) × 100`.
+4. Gauge + barras top 8.
 
 **Relaciones:** Accesible desde `/métricas`.
 
 ---
 
-## CU-13 – Consultar Cumplimiento de Plazos
+## CU-11 – Consultar Cumplimiento de Plazos
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
 | **Precondición** | CU-01. |
-| **Postcondición** | El actor conoce la fiabilidad de entrega a tiempo. |
+| **Postcondición** | Conoce fiabilidad de entrega a tiempo. |
 
-![Diagrama de flujo de cumplimiento](../imagenes/CdU/flujoCU13.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU11.png)
 
 **Flujo principal:**
-1. `GET /metrics/compliance` con filtros opcionales `employee_id`, `project_id`, `root_only`.
-2. `ComplianceService.calculate()` → `on_time` = tareas con `date_end ≤ date_deadline`; `total` = tareas cerradas con ambas fechas.
+1. `GET /metrics/compliance` con `employee_id`, `project_id`, `root_only`.
+2. `on_time` = `date_end ≤ date_deadline`; `total` = cerradas con ambas fechas.
 3. `compliance_rate = (on_time / total) × 100`.
-4. Doughnut chart central con el % y KPIs: tareas a tiempo, con retraso y total.
-5. Semáforo: ≥80 % verde · ≥60 % naranja · <60 % rojo.
+4. Doughnut + KPIs + semáforo (≥80% verde, ≥60% naranja, <60% rojo).
 
-**Flujos alternativos:**
-- `FA-01`: Sin tareas cerradas con fechas → tasa a 0.
-
-**Relaciones:** `<<include>>` desde CU-02 (panel de salud del overview).
+**Relaciones:** Accesible desde `/métricas`.
 
 ---
 
-## CU-14 – Consultar WIP de Empleado
+## CU-12 – Consultar WIP de Empleado
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
 | **Precondición** | CU-01. Empleado seleccionado. |
-| **Postcondición** | El actor identifica el nivel de paralelismo de tareas abiertas del empleado. |
+| **Postcondición** | Identifica paralelismo de tareas abiertas. |
 
-![Diagrama de flujo de WIP](../imagenes/CdU/flujoCU14.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU12.png)
 
 **Flujo principal:**
-1. El actor en `/métricas` selecciona un empleado y hace click en la tarjeta "WIP".
-2. `GET /metrics/wip?employee_id=X` → `WIPService.calculate()` cuenta las tareas abiertas asignadas al usuario vinculado al empleado.
-3. Umbrales: `wip_count ≤ 3` → óptimo (verde); `≤ 5` → aceptable (naranja); `> 5` → sobrecargado (rojo).
-4. Se muestra el recuento, el badge de estado y un mensaje de recomendación textual.
+1. En `/métricas`, selecciona empleado, click "WIP".
+2. `GET /metrics/wip?employee_id=X`. Cuenta tareas abiertas asignadas.
+3. Umbrales: ≤3 óptimo · ≤5 aceptable · >5 sobrecargado.
+4. Recuento, badge, recomendación textual.
 
 **Flujos alternativos:**
-- `FA-01`: Empleado fuera de scope → HTTP 403.
-- `FA-02`: Empleado sin `user_id` → WIP = 0, estado óptimo.
+- `FA-01`: Fuera de scope → HTTP 403.
+- `FA-02`: Sin `user_id` → WIP = 0.
+
+---
+
+## CU-13 – Consultar Carga de Trabajo (Workload) de Empleado
+
+| Campo | Valor |
+|---|---|
+| **Actores** | Director, Responsable |
+| **Precondición** | CU-01. Empleado seleccionado. |
+| **Postcondición** | Identifica si el empleado está sobre o infracargado. |
+
+![Diagrama de flujo](../imagenes/CdU/flujoCU13.png)
+
+**Flujo principal:**
+1. En `/métricas`, selecciona empleado, click "Carga de trabajo".
+2. `GET /metrics/workload?employee_id=X`. Suma `max(planned - worked, 0)` por tarea abierta.
+3. `workload_pct = (pending_hours / 40h) × 100`. Estado: >120% sobrecargado · 70-120% normal · <70% subcargado.
+4. Gauge, barra, KPIs.
+
+**Flujos alternativos:**
+- `FA-01`: Fuera de scope → HTTP 403.
+- `FA-02`: Sin `user_id` → 0, subcargado.
+
+**Relaciones:** También usado internamente por `GET /dashboards/summary/employee/{id}` (CU-03).
+
+---
+
+## CU-14 – Consultar Riesgo de Proyecto
+
+| Campo | Valor |
+|---|---|
+| **Actores** | Director, Responsable |
+| **Precondición** | CU-01. Proyecto en alcance. |
+| **Postcondición** | Identifica tareas con riesgo de incumplimiento. |
+
+![Diagrama de flujo](../imagenes/CdU/flujoCU14.png)
+
+**Flujo principal:**
+1. En `/métricas`, selecciona proyecto, click "Índice de riesgo".
+2. `GET /metrics/risk-index?project_id=X`. Tareas abiertas con `date_deadline`.
+3. En riesgo si: vencida O ≥80% plazo consumido.
+4. `risk_index = (en_riesgo / abiertas) × 100`. Doughnut + semáforo (<20% bajo, 20-50% medio, >50% alto).
+
+**Flujos alternativos:**
+- `FA-01`: Fuera de scope → HTTP 403.
+- `FA-02`: Sin tareas abiertas con deadline → 0.
+
+**Relaciones:** También ejecutado por CU-07 vía `/dashboards/summary/project/{id}`.
+
+---
+
+## CU-15 – Consultar Tasa de Retrabajo
+
+| Campo | Valor |
+|---|---|
+| **Actores** | Director, Responsable |
+| **Precondición** | CU-01. |
+| **Postcondición** | Detecta problemas de calidad vía tareas reabiertas. |
+
+![Diagrama de flujo](../imagenes/CdU/flujoCU15.png)
+
+**Flujo principal:**
+1. `GET /metrics/rework-rate` con `project_id`, `employee_id`, `root_only`.
+2. Analiza `mail_tracking_value`: reabierta = cerrada → abierta.
+3. `rework_rate = (reabiertos / cerradas) × 100`.
+4. Doughnut + semáforo (<8% verde, 8-15% naranja, >15% rojo).
 
 **Relaciones:** Accesible desde `/métricas`.
 
 ---
 
-## CU-15 – Consultar Riesgo de Proyecto
+## CU-16 – Consultar Exactitud de Estimación
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
-| **Precondición** | CU-01. Proyecto en el alcance del actor. |
-| **Postcondición** | El actor identifica las tareas con riesgo de incumplimiento dentro del proyecto. |
+| **Precondición** | CU-01. Empleado seleccionado. |
+| **Postcondición** | Calibra fiabilidad de estimaciones del responsable. |
 
-![Diagrama de flujo de riesgo de proyecto](../imagenes/CdU/flujoCU15.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU16.png)
 
 **Flujo principal:**
-1. El actor en `/métricas` selecciona un proyecto y hace click en la tarjeta "Índice de riesgo".
-2. `GET /metrics/risk-index?project_id=X` → `RiskIndexService.calculate()` analiza las tareas abiertas con `date_deadline`.
-3. Una tarea está en riesgo si: `date_deadline < hoy` (vencida), O ha consumido ≥80 % del tiempo desde `date_assign` hasta `date_deadline`.
-4. `risk_index = (en_riesgo / abiertas) × 100`.
-5. Doughnut chart (en riesgo vs. en plazo), KPIs y semáforo: <20 % bajo · 20-50 % medio · >50 % alto.
+1. En `/métricas`, selecciona empleado.
+2. `GET /metrics/estimation-accuracy?responsable_id=X`. Ratio `actual / planned`.
+3. `accuracy_pct = average_ratio × 100`. Sesgo: >110% subestima · <90% sobreestima · 90-110% preciso.
+4. Gauge, badge sesgo, ratio, total tareas.
 
 **Flujos alternativos:**
-- `FA-01`: Proyecto fuera de scope → HTTP 403.
-- `FA-02`: Sin tareas abiertas con deadline → riesgo 0.
-
-**Relaciones:** Accesible desde `/métricas`. También ejecutado por CU-09 vía `GET /dashboards/summary/project/{id}`.
+- `FA-01`: Fuera de scope → HTTP 403.
+- `FA-02`: Sin datos → sesgo `sin_datos`.
 
 ---
 
-## CU-16 – Consultar Tasa de Retrabajo
+## CU-17 – Consultar Lead Time
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
 | **Precondición** | CU-01. |
-| **Postcondición** | El actor detecta problemas de calidad o proceso mediante el análisis de tareas reabiertas. |
+| **Postcondición** | Identifica tiempo medio de ciclo. |
 
-![Diagrama de flujo de retrabajo](../imagenes/CdU/flujoCU16.png)
-
-**Flujo principal:**
-1. `GET /metrics/rework-rate` con filtros opcionales `project_id`, `employee_id`, `root_only`.
-2. `ReworkRateService` → obtiene tareas cerradas en el scope, luego `get_tasks_reopened()` analiza el historial de `mail_tracking_value`: una tarea reabierta es aquella que transita de etapa cerrada a etapa abierta.
-3. `rework_rate = (reabiertos / cerradas_total) × 100`.
-4. Doughnut chart (reabiertos vs. OK), KPIs y semáforo: <8 % verde · 8-15 % naranja · >15 % rojo.
-
-**Flujos alternativos:**
-- `FA-01`: Sin tareas cerradas → tasa 0.
-
-**Relaciones:** `<<include>>` desde CU-02 (panel de salud del overview).
-
----
-
-## CU-17 – Consultar Exactitud de Estimación
-
-| Campo | Valor |
-|---|---|
-| **Actores** | Director, Responsable |
-| **Precondición** | CU-01. Empleado (responsable de tarea) seleccionado. |
-| **Postcondición** | El actor calibra la fiabilidad de las estimaciones del responsable seleccionado. |
-
-![Diagrama de flujo de exactitud de estimación](../imagenes/CdU/flujoCU17.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU17.png)
 
 **Flujo principal:**
-1. El actor en `/métricas` selecciona un empleado.
-2. `GET /metrics/estimation-accuracy?responsable_id=X` → `EstimationAccuracyService` analiza tareas cerradas del responsable con `planned_hours > 0` y `worked_hours > 0`. Ratio por tarea: `actual / planned`.
-3. `average_ratio` = media de todos los ratios; `accuracy_pct = average_ratio × 100`.
-4. Sesgo: `subestima` (>110 %) · `sobreestima` (<90 %) · `preciso` (90–110 %).
-5. Gauge con %, badge de sesgo con color, ratio promedio, total tareas y mensaje contextual explicativo.
-
-**Flujos alternativos:**
-- `FA-01`: Empleado fuera de scope → HTTP 403.
-- `FA-02`: Sin tareas con datos suficientes → sesgo `sin_datos`, valor a 0.
+1. `GET /metrics/lead-time` con `employee_id`, `project_id`, `root_only`.
+2. Tareas cerradas con `date_assign` y `date_end`. Días = `(date_end - date_assign) / 86400`.
+3. KPI central en días + total tareas.
+4. Semáforo: <5d verde · 5-10d naranja · >10d rojo.
 
 **Relaciones:** Accesible desde `/métricas`.
 
 ---
 
-## CU-18 – Consultar Lead Time
+## CU-18 – Consultar Tiempo por Estado
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
 | **Precondición** | CU-01. |
-| **Postcondición** | El actor identifica el tiempo medio de ciclo de las tareas. |
+| **Postcondición** | Identifica etapas con tiempos excesivos. |
 
-![Diagrama de flujo de lead time](../imagenes/CdU/flujoCU18.png)
-
-**Flujo principal:**
-1. `GET /metrics/lead-time` con filtros opcionales `employee_id`, `project_id`, `root_only`.
-2. `LeadTimeService.calculate()` → tareas cerradas con `date_assign` y `date_end`. Días = `(date_end - date_assign).seconds / 86400`.
-3. `average_lead_time_days` = media de todos los valores.
-4. KPI central con el valor en días (ej.: 4.2d) y total de tareas analizadas.
-5. Semáforo referencial: <5d verde · 5-10d naranja · >10d rojo.
-
-**Flujos alternativos:**
-- `FA-01`: Sin tareas con ambas fechas → valor N/A.
-
-**Relaciones:** `<<include>>` desde CU-02 (panel de salud del overview).
-
----
-
-## CU-19 – Consultar Tiempo por Estado
-
-| Campo | Valor |
-|---|---|
-| **Actores** | Director, Responsable |
-| **Precondición** | CU-01. |
-| **Postcondición** | El actor identifica etapas con tiempos excesivos de permanencia. |
-
-![Diagrama de flujo de tiempo por estado](../imagenes/CdU/flujoCU19.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU18.png)
 
 **Flujo principal:**
-1. `GET /metrics/state-time` con filtros opcionales `project_id`, `employee_id`, `root_only`.
-2. `StateTimeService.calculate()` → por cada tarea en el scope, `get_stage_changes()` obtiene los cambios de etapa desde `mail_tracking_value` y calcula las horas de permanencia entre cambios consecutivos.
-3. Se agrega por etapa: `{stage_id: [horas]}` y se calcula la media.
-4. Los nombres de etapa se obtienen desde `TaskStage`.
-5. Tabla ordenada de mayor a menor por horas medias: Etapa · Horas medias · Nº tareas.
-
-**Flujos alternativos:**
-- `FA-01`: Sin datos de tracking en `mail_tracking_value` → tabla vacía.
+1. `GET /metrics/state-time` con `project_id`, `employee_id`, `root_only`.
+2. Analiza `mail_tracking_value`: horas entre cambios consecutivos de etapa.
+3. Agrega por etapa y calcula media.
+4. Tabla ordenada: Etapa · Horas medias · Nº tareas.
 
 **Relaciones:** Accesible desde `/métricas`.
 
 ---
 
-## CU-20 – Consultar Tareas Canceladas
+## CU-19 – Consultar Tareas Canceladas
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
 | **Precondición** | CU-01. |
-| **Postcondición** | El actor evalúa la tasa de cancelación del proceso. |
+| **Postcondición** | Evalúa tasa de cancelación. |
 
-![Diagrama de flujo de tareas canceladas](../imagenes/CdU/flujoCU20.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU19.png)
 
 **Flujo principal:**
-1. `GET /metrics/cancelled-tasks` con filtros opcionales `project_id`, `date_from`, `date_to`, `root_only`.
-2. `CancelledTasksService.calculate()` → `total` = todas las tareas en el scope; `canceladas` = tareas cuya etapa tiene el nombre "Cancelado" (comparación case-insensitive sobre el nombre traducido).
-3. `cancelled_pct = (canceladas / total) × 100`.
-4. KPIs: porcentaje de canceladas · número de canceladas · total de tareas.
-5. Semáforo referencial: <5 % verde · 5-10 % naranja · >10 % rojo.
-
-**Flujos alternativos:**
-- `FA-01`: Sin tareas → porcentaje a 0.
-
-**Relaciones:** Accesible desde `/métricas`.
+1. `GET /metrics/cancelled-tasks` con `project_id`, `date_from`, `date_to`, `root_only`.
+2. Canceladas = etapa "Cancelado" (case-insensitive). `cancelled_pct = (canceladas / total) × 100`.
+3. KPIs + semáforo (<5% verde, 5-10% naranja, >10% rojo).
 
 ---
 
-## CU-21 – Consultar Tiempo por Prioridad
+## CU-20 – Consultar Tiempo por Prioridad
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
 | **Precondición** | CU-01. |
-| **Postcondición** | El actor verifica cómo se distribuye el esfuerzo según la prioridad de las tareas. |
+| **Postcondición** | Verifica distribución de esfuerzo por prioridad. |
 
-![Diagrama de flujo de tiempo por prioridad](../imagenes/CdU/flujoCU21.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU20.png)
 
 **Flujo principal:**
-1. `GET /metrics/priority-time` con filtros opcionales `employee_id`, `project_id`, `root_only`.
-2. `PriorityTimeService.calculate()` → tareas cerradas agrupadas por campo `priority` ("0" = Normal, "1" = Urgente). Suma `worked_hours` y cuenta tareas por grupo.
-3. Resultado: media de horas por prioridad (`total_hours / task_count`).
-4. Se muestra como `PriorityTimeItem` con valor, unidad ("horas") y descripción (ej.: "Promedio de 12 tareas").
-
-**Flujos alternativos:**
-- `FA-01`: Sin tareas clasificadas → resultado vacío.
-
-**Relaciones:** Accesible desde `/métricas`.
+1. `GET /metrics/priority-time` con `employee_id`, `project_id`, `root_only`.
+2. Tareas cerradas agrupadas por `priority` ("0"=Normal, "1"=Urgente).
+3. Media de horas por grupo.
 
 ---
 
-## CU-22 – Visualizar Gráficos Analíticos
+## CU-21 – Visualizar Gráficos Analíticos
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
 | **Precondición** | CU-01. |
-| **Postcondición** | El actor analiza tendencias y distribuciones visualmente. |
+| **Postcondición** | Analiza tendencias y distribuciones visualmente. |
 
-![Diagrama de flujo de gráficos analíticos](../imagenes/CdU/flujoCU22.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU21.png)
 
 **Flujo principal:**
-1. El actor navega a `/gráficos`. Al cargar se obtienen los datos de soporte: `GET /employees/`, `GET /departments/`, `GET /projects/`.
-2. El actor configura el rango de fechas (con atajos 30d/3m/6m/1a), la agrupación (semana/mes) y el tipo de filtro (empresa/empleado/departamento/proyecto).
-3. Se cargan tres gráficos en paralelo: `GET /charts/task-evolution`, `GET /charts/task-distribution`, `GET /metrics/client-distribution` (solo Director).
-4. **Gráfico 1** (LineChart): evolución de tareas completadas / abiertas / vencidas por período.
-5. **Gráfico 2** (PieChart): distribución de tareas por etapa con % inline.
-6. **Gráfico 3** (BarChart horizontal): horas registradas por cliente — solo visible para el Director.
-7. Al cambiar agrupación o filtros, se recalcula la evolución con una nueva petición.
+1. Navega a `/gráficos`. Carga soporte: `GET /employees/`, `/departments/`, `/projects/`.
+2. Configura fechas (30d/3m/6m/1a), agrupación (semana/mes), filtro (empresa/empleado/dpto/proyecto).
+3. Tres gráficos: `GET /charts/task-evolution`, `/charts/task-distribution`, `/metrics/client-distribution` (solo Director).
+4. LineChart evolución · PieChart distribución · BarChart horas por cliente.
 
 **Flujos alternativos:**
-- `FA-01`: Sin datos en el período → cada gráfico muestra "Sin datos".
-- `FA-02`: El Responsable no ve `client-distribution`; los datos de evolución se filtran por sus `project_ids`.
+- `FA-01`: Sin datos → "Sin datos".
+- `FA-02`: Responsable no ve `client-distribution`.
 
-**Relaciones:** `<<include>>` CU-04 (empleados), CU-06 (departamentos), CU-08 (proyectos) para los selectores de filtro.
+**Relaciones:** `<<include>>` CU-02, CU-04, CU-06 para selectores.
 
 ---
 
-## CU-23 – Consultar Asistencia vs Imputaciones
+## CU-22 – Consultar Asistencia vs Imputaciones
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
 | **Precondición** | CU-01. |
-| **Postcondición** | El actor detecta discrepancias entre la presencia física (fichajes) y las horas imputadas en partes analíticos. |
+| **Postcondición** | Detecta discrepancias fichajes vs. imputaciones. |
 
-![Diagrama de flujo de asistencia](../imagenes/CdU/flujoCU23.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU22.png)
 
 **Flujo principal:**
-1. El actor navega a `/asistencia`. El rango por defecto es el mes actual.
-2. Al cargar se obtienen: `GET /employees/managers/list` y `GET /departments/`.
-3. El actor selecciona el modo de vista: **Equipo global** o **Por responsable** (solo Director). Configura el rango de fechas y opcionalmente filtra por departamento.
-4. En modo "Equipo global": `GET /employees/attendance/comparison?date_from&date_to [&department_id]`.  En modo "Por responsable": `GET /employees/attendance/manager/{id}?date_from&date_to`.
-5. Se calculan por empleado: `attendance_hours` (de `hr_attendance`), `timesheet_hours` (de `account_analytic_line`), `diff` y `coverage_pct = (timesheet / attendance) × 100`.
-6. 4 KPIs de resumen · gráfico de barras (fichadas vs. imputadas, top 15) · tabla de empleados con badge de cobertura (OK ≥95 % · Revisar ≥80 % · Alerta <80 %).
-7. Click en empleado → `GET /employees/attendance/{id}/daily` → panel expandido con gráfico de serie diaria y línea de diferencia al pie de la página.
+1. Navega a `/asistencia`. Rango: mes actual.
+2. Carga: `GET /employees/managers/list` y `/departments/`.
+3. Modo: Equipo global o Por responsable (solo Director).
+4. Equipo: `GET /employees/attendance/comparison`. Manager: `GET /employees/attendance/manager/{id}`.
+5. Por empleado: `attendance_hours`, `timesheet_hours`, `diff`, `coverage_pct`.
+6. 4 KPIs · barras top 15 · tabla con badge cobertura (OK ≥95% · Revisar ≥80% · Alerta <80%).
+7. Click empleado → `GET /employees/attendance/{id}/daily` → serie diaria.
 
 **Flujos alternativos:**
-- `FA-01`: Sin datos en el período → KPIs a 0 y tabla vacía.
-- `FA-02`: Responsable → no dispone del modo "Por responsable".
+- `FA-01`: Sin datos → KPIs a 0.
+- `FA-02`: Responsable sin modo "Por responsable".
 
-**Relaciones:** `<<include>>` CU-04 (empleados), CU-06 (departamentos) para los selectores de filtro.
+**Relaciones:** `<<include>>` CU-02, CU-04 para selectores.
 
 ---
 
-## CU-24 – Consultar Rentabilidad Financiera
+## CU-23 – Consultar Rentabilidad Financiera
 
 | Campo | Valor |
 |---|---|
@@ -590,115 +519,102 @@
 | **Precondición** | CU-01 con `role = "director"`. |
 | **Postcondición** | El Director conoce la rentabilidad real por proyecto, cliente y responsable. |
 
-![Diagrama de flujo de rentabilidad](../imagenes/CdU/flujoCU24.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU23.png)
 
 **Flujo principal:**
 1. El actor navega a `/rentabilidad`. Selecciona rango de fechas y modo de filtro: Global · Por proyecto · Por responsable.
-2. Los datos provienen de `account_analytic_line.amount` (positivo = ingreso, negativo = gasto).
+2. Datos de `account_analytic_line.amount` (positivo = ingreso, negativo = gasto).
 3. `GET /metrics/profitability/summary` → 4 KPIs: ingresos · gastos · neto · rentabilidad %.
 4. Gráfico de barras agrupadas (ingresos vs. gastos por proyecto, top 12) y donut de estados (Ganancia/Neutro/Pérdida).
-5. **Pestaña Por proyecto**: `GET /metrics/profitability/per-project` con columnas income, expense, net, horas, rentabilidad%, badge y botón "Ver Detalles" (extiende a CU-26).
-6. **Pestaña Por cliente**: `GET /metrics/profitability/per-client` agrupando por `partner_id`, con botón "Ver Detalles" (extiende a CU-27).
-7. En modo "Por responsable": un selector permite elegir manager; botón "Ver detalle →" carga un panel individual con `GET /metrics/profitability/manager/{id}`, su tabla de proyectos y un gráfico de barras.
+5. **Pestaña Por proyecto**: `GET /metrics/profitability/per-project` con botón "Ver Detalles" (extiende a CU-24).
+6. **Pestaña Por cliente**: `GET /metrics/profitability/per-client` con botón "Ver Detalles" (extiende a CU-25).
+7. En modo "Por responsable": selector de manager; botón "Ver detalle →" carga panel individual con `GET /metrics/profitability/manager/{id}`.
 
 **Flujos alternativos:**
-- `FA-01`: Sin partes analíticos en el período → todo a 0.
+- `FA-01`: Sin partes analíticos → todo a 0.
 - `FA-02`: Responsable intentando acceder → HTTP 403, pantalla "Acceso restringido".
 
-**Relaciones:** `<<extend>>` por CU-26 (líneas por proyecto) y CU-27 (líneas por cliente).
+**Relaciones:** `<<extend>>` por CU-24 (líneas por proyecto) y CU-25 (líneas por cliente).
 
 ---
 
-## CU-25 – Realizar Búsqueda Global
-
-| Campo | Valor |
-|---|---|
-| **Actores** | Director, Responsable |
-| **Precondición** | CU-01. Mínimo 2 caracteres de entrada. |
-| **Postcondición** | El actor localiza el recurso buscado y navega a su detalle. |
-
-![Diagrama de flujo de búsqueda global](../imagenes/CdU/flujoCU25.png)
-
-**Flujo principal:**
-1. El actor navega a `/buscar` (o usa el acceso directo de la barra lateral).
-2. Al escribir ≥ 2 caracteres se activa el debounce de 350 ms.
-3. `GET /search/?q=texto&entity=all` → resultados agrupados: tareas (por nombre/código), proyectos (por nombre JSONB/código) y empleados (por nombre); máximo 10 por tipo.
-4. El Responsable recibe los resultados filtrados por su scope (backend).
-5. El actor puede refinar por tipo de entidad con los botones [Todos][Tareas][Proyectos][Empleados].
-6. Click en resultado tarea → CU-11; proyecto → CU-09; empleado → CU-05.
-
-**Flujos alternativos:**
-- `FA-01`: Sin resultados → estado vacío con mensaje.
-
-**Relaciones:** Navega a CU-05, CU-09, CU-11.
-
----
-
-## CU-26 – Consultar Líneas Analíticas de Proyecto
+### CU-24 – Consultar Líneas Analíticas de Proyecto
 
 | Campo | Valor |
 |---|---|
 | **Actores** | **Director** (exclusivo) |
-| **Precondición** | CU-01 con `role = "director"`. Proyecto seleccionado en CU-24. |
+| **Precondición** | CU-01 con `role = "director"`. Proyecto seleccionado en CU-23. |
 | **Postcondición** | El Director conoce el desglose de ingresos y gastos individuales del proyecto. |
 
-![Diagrama de flujo de líneas analíticas de proyecto](../imagenes/CdU/flujoCU26.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU24.png)
 
 **Flujo principal:**
-1. Desde CU-24, el actor hace click en "Ver Detalles" en una fila de proyecto.
+1. Desde CU-23, el actor hace click en "Ver Detalles" en una fila de proyecto.
 2. `GET /metrics/profitability/per-project/{project_id}/lines` con filtros opcionales de fecha y manager.
 3. Las líneas de `account_analytic_line` se separan en `incomes` (amount ≥ 0) y `expenses` (amount < 0).
-4. Se muestran dos tablas dentro de la misma vista: **Ingresos** y **Gastos**, con columnas fecha · nombre · importe · horas.
+4. Dos tablas: **Ingresos** y **Gastos** con fecha · nombre · importe · horas.
 
 **Flujos alternativos:**
 - `FA-01`: Sin líneas en el período → tablas vacías.
 
-**Relaciones:** `<<extend>>` desde CU-24.
+**Relaciones:** `<<extend>>` desde CU-23.
 
 ---
 
-## CU-27 – Consultar Líneas Analíticas de Cliente
+### CU-25 – Consultar Líneas Analíticas de Cliente
 
 | Campo | Valor |
 |---|---|
 | **Actores** | **Director** (exclusivo) |
-| **Precondición** | CU-01 con `role = "director"`. Cliente seleccionado en CU-24. |
-| **Postcondición** | El Director conoce el desglose de ingresos y gastos individuales del cliente (agregados de sus proyectos). |
+| **Precondición** | CU-01 con `role = "director"`. Cliente seleccionado en CU-23. |
+| **Postcondición** | El Director conoce el desglose de ingresos y gastos individuales del cliente. |
 
-![Diagrama de flujo de líneas analíticas de cliente](../imagenes/CdU/flujoCU27.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU25.png)
 
 **Flujo principal:**
-1. Desde CU-24, el actor hace click en "Ver Detalles" en una fila de cliente.
+1. Desde CU-23, el actor hace click en "Ver Detalles" en una fila de cliente.
 2. `GET /metrics/profitability/per-client/{client_id}/lines` con filtros opcionales de fecha, proyecto y manager.
-3. Se obtienen las líneas de `account_analytic_line` de todos los proyectos del cliente (filtrado por `Project.partner_id`), separadas en `incomes` y `expenses`.
-4. Dos tablas con columnas fecha · nombre · importe · horas · project_id.
+3. Líneas de todos los proyectos del cliente, separadas en `incomes` y `expenses`.
+4. Dos tablas con fecha · nombre · importe · horas · project_id.
 
 **Flujos alternativos:**
-- `FA-01`: Cliente sin proyectos con líneas → tablas vacías.
+- `FA-01`: Sin líneas → tablas vacías.
 
-**Relaciones:** `<<extend>>` desde CU-24.
+**Relaciones:** `<<extend>>` desde CU-23.
 
 ---
 
-## CU-28 – Consultar Carga de Trabajo (Workload) de Empleado
+### CU-26 – Realizar Búsqueda Global
 
 | Campo | Valor |
 |---|---|
 | **Actores** | Director, Responsable |
-| **Precondición** | CU-01. Empleado seleccionado. |
-| **Postcondición** | El actor identifica si el empleado está sobre o infracargado de trabajo. |
+| **Precondición** | CU-01. Mínimo 2 caracteres. |
+| **Postcondición** | Localiza recurso y navega a su detalle. |
 
-![Diagrama de flujo de workload](../imagenes/CdU/flujoCU28.png)
+![Diagrama de flujo](../imagenes/CdU/flujoCU26.png)
 
 **Flujo principal:**
-1. El actor en `/métricas` selecciona un empleado y hace click en "Carga de trabajo".
-2. `GET /metrics/workload?employee_id=X [&detailed&root_only]` → `WorkloadService.calculate()`.
-3. Se obtienen las tareas abiertas asignadas al usuario y se suma `max(planned - worked, 0)` por tarea → `pending_hours`.
-4. `workload_pct = (pending_hours / 40h) × 100`. Estado: `sobrecargado` (>120 %) · `normal` (70-120 %) · `subcargado` (<70 %).
-5. Gauge con %, barra de progreso coloreada según estado y KPIs: horas pendientes · tareas pendientes · tareas completadas (últimos 30d).
+1. Navega a `/buscar` o acceso directo en sidebar.
+2. ≥ 2 caracteres → debounce 350 ms.
+3. `GET /search/?q=texto&entity=all` → tareas, proyectos, empleados; máx. 10 por tipo.
+4. Responsable: filtrado por scope.
+5. Botones [Todos][Tareas][Proyectos][Empleados].
+6. Click: tarea → CU-09 · proyecto → CU-07 · empleado → CU-03.
 
 **Flujos alternativos:**
-- `FA-01`: Empleado fuera de scope → HTTP 403.
-- `FA-02`: Sin `user_id` vinculado → `pending_hours = 0`, estado `subcargado`.
+- `FA-01`: Sin resultados → estado vacío.
 
-**Relaciones:** Accesible desde `/métricas`. Su resultado también se usa internamente en `GET /dashboards/summary/employee/{id}` (CU-05) y `GET /dashboards/summary/manager` (CU-03).
+**Relaciones:** Navega a CU-03, CU-07, CU-09.
+
+### CU-27 – Cerrar Sesión
+| Campo | Valor |
+|---|---|
+| **Actores** | Director, Responsable |
+| **Precondición** | CU-01. Usuario autenticado. |
+| **Postcondición** | JWT eliminado, cabecera de autenticación limpia, redirigido a login. |
+
+**Flujo principal:**
+1. El actor hace click en "Cerrar Sesión" en el menú de usuario.
+2. El frontend elimina el JWT de `localStorage` y limpia la cabecera `Authorization` de Axios.
+3. Redirige a `/login`.
