@@ -68,7 +68,7 @@ En esta seccion se detallan los casos de uso del sistema desde el punto de vista
 - **Flujo principal:** 1. El actor solicita el listado. 2. El sistema recupera los documentos disponibles para el usuario. 3. El sistema muestra proyecto, tipo, etiqueta, titulo, sesion y fecha.
 - **Casos de Error:** No existe documentacion registrada o falla la consulta.
 - **Postcondiciones:** El actor dispone de una vista general de la documentacion.
-- **Diagrama:** ![Listar documentacion](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/ListarDocumentacion/ListarDocumentacion.svg)
+- **Diagrama:** ![Listar documentacion](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/ListarDocumentacion/listarDocumentacion.svg)
 
 ---
 
@@ -79,7 +79,7 @@ En esta seccion se detallan los casos de uso del sistema desde el punto de vista
 - **Flujo principal:** 1. El actor selecciona un documento. 2. El sistema recupera sus metadatos y contenido. 3. El sistema muestra la informacion detallada.
 - **Casos de Error:** Documento no encontrado o fallo de recuperacion.
 - **Postcondiciones:** El actor visualiza el documento seleccionado.
-- **Diagrama:** ![Consultar documentacion](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/ConsultarDocumentacion/ConsultarDocumentacion.svg)
+- **Diagrama:** ![Consultar documentacion](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/ConsultarDocumentacion/consultarDocumentacion.svg)
 
 ---
 
@@ -101,7 +101,7 @@ En esta seccion se detallan los casos de uso del sistema desde el punto de vista
 - **Flujo principal:** 1. El actor solicita eliminar un documento. 2. El sistema solicita confirmacion. 3. El actor confirma. 4. El sistema elimina la documentacion.
 - **Casos de Error:** Documento inexistente o fallo de eliminacion.
 - **Postcondiciones:** La documentacion deja de estar disponible.
-- **Diagrama:** ![Eliminar documentacion](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/EliminarDocumentacion/EliminarDocumentacion.svg)
+- **Diagrama:** ![Eliminar documentacion](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/EliminarDocumentacion/eliminarDocumentacion.svg)
 
 ---
 
@@ -233,7 +233,7 @@ En esta seccion se detallan los casos de uso del sistema desde el punto de vista
 - **Flujo principal:** 1. El actor abre el formulario de escenario. 2. Introduce titulo, feature, etiquetas, caso de uso, requisitos asociados, background, pasos y ejemplos. 3. El sistema valida datos y trazabilidad. 4. El sistema registra el escenario.
 - **Casos de Error:** Titulo vacio, pasos vacios, referencias inexistentes o sesion en modo automatico.
 - **Postcondiciones:** Se crea un nuevo escenario Gherkin.
-- **Diagrama:** ![Crear escenario Gherkin](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/CrearEscenarioGherkin/CrearEscenarioGherkin.svg)
+- **Diagrama:** ![Crear escenario Gherkin](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/CrearEscenarioGherkin/crearEscenarioGherkin.svg)
 
 ---
 
@@ -244,7 +244,7 @@ En esta seccion se detallan los casos de uso del sistema desde el punto de vista
 - **Flujo principal:** 1. El actor selecciona un escenario. 2. El sistema recupera su detalle. 3. El sistema muestra la informacion estructurada y el texto Gherkin.
 - **Casos de Error:** Escenario no encontrado o error de acceso.
 - **Postcondiciones:** El actor visualiza el escenario seleccionado.
-- **Diagrama:** ![Consultar escenario Gherkin](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/ConsultarEscenarioGherkin/ConsultarEscenarioGherkin.svg)
+- **Diagrama:** ![Consultar escenario Gherkin](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/ConsultarEscenarioGherkin/consultarEscenarioGherkin.svg)
 
 ---
 
@@ -255,7 +255,7 @@ En esta seccion se detallan los casos de uso del sistema desde el punto de vista
 - **Flujo principal:** 1. El actor selecciona el escenario. 2. El sistema muestra su informacion actual. 3. El actor modifica datos y pasos. 4. El sistema valida y guarda los cambios.
 - **Casos de Error:** Escenario no encontrado, pasos invalidos o referencias inexistentes.
 - **Postcondiciones:** El escenario queda actualizado.
-- **Diagrama:** ![Actualizar escenario Gherkin](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/ActualizarEscenarioGherkin/ActualizarEscenarioGherkin.svg)
+- **Diagrama:** ![Actualizar escenario Gherkin](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/ActualizarEscenarioGherkin/actualizarEscenarioGherkin.svg)
 
 ---
 
@@ -266,7 +266,7 @@ En esta seccion se detallan los casos de uso del sistema desde el punto de vista
 - **Flujo principal:** 1. El actor solicita eliminar el escenario. 2. El sistema solicita confirmacion. 3. El actor confirma. 4. El sistema elimina el escenario.
 - **Casos de Error:** Escenario inexistente o fallo de eliminacion.
 - **Postcondiciones:** El escenario deja de estar disponible.
-- **Diagrama:** ![Eliminar escenario Gherkin](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/EliminarEscenarioGherkin/EliminarEscenarioGherkin.svg)
+- **Diagrama:** ![Eliminar escenario Gherkin](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/EliminarEscenarioGherkin/eliminarEscenarioGherkin.svg)
 
 ---
 
@@ -325,40 +325,18 @@ En esta seccion se detallan los casos de uso del sistema desde el punto de vista
 
 ---
 
-## CU30. Aceptar y publicar caso de prueba a partir de borrador
+## CU30. Publicar caso de prueba a partir de borrador
 - **Actor:** Ingeniero de QA
 - **Descripcion:** Permite aceptar un borrador y publicarlo como caso de prueba en Kiwi TCMS.
 - **Precondiciones:** Existe un borrador con contenido y la integracion con Kiwi TCMS esta disponible.
-- **Flujo principal:** 1. El actor revisa el borrador. 2. El sistema confirma la publicacion. 3. El sistema envia el contenido del borrador a Kiwi TCMS. 4. Kiwi TCMS registra el caso. 5. El sistema guarda el identificador devuelto y marca el borrador como publicado.
+- **Flujo principal:** 1. El actor revisa el borrador. 2. El actor confirma la publicacion. 3. El sistema envia el contenido del borrador a Kiwi TCMS. 4. Kiwi TCMS registra el caso. 5. El sistema guarda el identificador devuelto y marca el borrador como publicado.
 - **Casos de Error:** Borrador no encontrado, borrador sin contenido, fallo de integracion o error de publicacion.
 - **Postcondiciones:** El caso de prueba queda publicado y el borrador queda marcado como publicado.
-- **Diagrama:** ![Aceptar y publicar caso de prueba a partir de borrador](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/AceptarYPublicarCasoPruebaBorrador/AceptarYPublicarCasoPruebaBorrador.svg)
+- **Diagrama:** ![Publicar caso de prueba a partir de borrador](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/PublicarCasoPruebaBorrador/PublicarCasoPruebaBorrador.svg)
 
 ---
 
-## CU31. Buscar casos de prueba en Kiwi TCMS
-- **Actor:** Ingeniero de QA
-- **Descripcion:** Permite buscar casos de prueba registrados en Kiwi TCMS.
-- **Precondiciones:** La integracion con Kiwi TCMS esta disponible.
-- **Flujo principal:** 1. El actor introduce criterios de busqueda. 2. El sistema envia la consulta a Kiwi TCMS. 3. Kiwi TCMS devuelve coincidencias. 4. El sistema muestra los casos encontrados.
-- **Casos de Error:** Sin resultados, criterios invalidos o error de conexion.
-- **Postcondiciones:** El actor obtiene resultados de busqueda en Kiwi TCMS.
-- **Diagrama:** ![Buscar casos de prueba en Kiwi TCMS](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/BuscarCasoPruebaKiwi/BuscarCasoPruebaKiwi.svg)
-
----
-
-## CU32. Ver caso de prueba en Kiwi TCMS
-- **Actor:** Ingeniero de QA
-- **Descripcion:** Permite consultar el detalle de un caso de prueba almacenado en Kiwi TCMS.
-- **Precondiciones:** Existe al menos un caso de prueba accesible en Kiwi TCMS.
-- **Flujo principal:** 1. El actor selecciona un caso de prueba. 2. El sistema solicita el detalle a Kiwi TCMS. 3. Kiwi TCMS devuelve la informacion del caso. 4. El sistema muestra el detalle obtenido.
-- **Casos de Error:** Caso no encontrado, permisos insuficientes o error de consulta externa.
-- **Postcondiciones:** El actor visualiza el detalle del caso de prueba.
-- **Diagrama:** ![Ver caso de prueba en Kiwi TCMS](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/VerCasoPruebaKiwi/VerCasoPruebaKiwi.svg)
-
----
-
-## CU33. Seleccionar sesiones
+## CU31. Seleccionar sesiones
 - **Actor:** Ingeniero de QA
 - **Descripcion:** Permite seleccionar una sesion de trabajo existente.
 - **Precondiciones:** Existen sesiones registradas y accesibles para el actor.
@@ -369,7 +347,7 @@ En esta seccion se detallan los casos de uso del sistema desde el punto de vista
 
 ---
 
-## CU34. Crear nueva sesion
+## CU32. Crear nueva sesion
 - **Actor:** Ingeniero de QA
 - **Descripcion:** Permite crear una nueva sesion de trabajo.
 - **Precondiciones:** El actor ha iniciado sesion.
@@ -380,18 +358,18 @@ En esta seccion se detallan los casos de uso del sistema desde el punto de vista
 
 ---
 
-## CU35. Eliminar sesion
+## CU33. Eliminar sesion
 - **Actor:** Ingeniero de QA
 - **Descripcion:** Permite eliminar una sesion de trabajo y sus artefactos asociados.
 - **Precondiciones:** Existe una sesion registrada y accesible.
 - **Flujo principal:** 1. El actor solicita eliminar la sesion. 2. El sistema solicita confirmacion. 3. El actor confirma. 4. El sistema elimina la sesion y los artefactos asociados.
 - **Casos de Error:** Sesion no encontrada o eliminacion no permitida.
 - **Postcondiciones:** La sesion deja de estar disponible.
-- **Diagrama:** ![Eliminar sesion](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/EliminarSesion/EliminarSesion.svg)
+- **Diagrama:** ![Eliminar sesion](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/EliminarSesion/eliminarSesion.svg)
 
 ---
 
-## CU36. Guardar resultados
+## CU34. Guardar resultados
 - **Actor:** Ingeniero de QA
 - **Descripcion:** Permite guardar una instantanea de los resultados de la sesion.
 - **Precondiciones:** Existe una sesion activa con artefactos asociados.
@@ -399,6 +377,28 @@ En esta seccion se detallan los casos de uso del sistema desde el punto de vista
 - **Casos de Error:** Sesion no encontrada o fallo al guardar resultados.
 - **Postcondiciones:** Los resultados quedan guardados y asociados a la sesion.
 - **Diagrama:** ![Guardar resultados](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/GuardarResultados/GuardarResultados.svg)
+
+---
+
+## CU35. Registrar cuenta
+- **Actor:** Ingeniero de QA
+- **Descripcion:** Permite crear una cuenta de usuario para acceder al sistema.
+- **Precondiciones:** El actor no tiene una sesion iniciada o accede desde la pantalla de registro.
+- **Flujo principal:** 1. El actor solicita registrarse. 2. Introduce usuario, email y contrasena. 3. El sistema valida que los datos sean aceptables y que el usuario no exista. 4. El sistema crea la cuenta e inicia la sesion del usuario.
+- **Casos de Error:** Usuario ya existente, datos incompletos o fallo al crear la cuenta.
+- **Postcondiciones:** La cuenta queda creada y el usuario accede al sistema.
+- **Diagrama:** ![Registrar cuenta](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/RegistrarCuenta/RegistrarCuenta.svg)
+
+---
+
+## CU36. Crear traspaso al flujo automatico
+- **Actor:** Ingeniero de QA
+- **Descripcion:** Permite transferir una sesion con documentacion al entorno de agentes para preparar artefactos y borradores de forma automatica.
+- **Precondiciones:** El actor ha iniciado sesion, existe una sesion con proyecto y hay documentacion asociada.
+- **Flujo principal:** 1. El actor elige continuar con el flujo de agentes. 2. El sistema valida que la sesion tenga proyecto y documentacion. 3. El sistema crea el traspaso al entorno de agentes. 4. El entorno de agentes recupera la documentacion de la sesion y prepara artefactos derivados. 5. El sistema guarda la referencia al entorno de agentes y marca la sesion como automatica. 6. El actor puede abrir el entorno de agentes para continuar la revision.
+- **Casos de Error:** Sesion no encontrada, proyecto vacio, sesion sin documentacion o entorno de agentes no disponible.
+- **Postcondiciones:** La sesion queda en modo automatico y el actor puede continuar el trabajo desde el entorno de agentes.
+- **Diagrama:** ![Crear traspaso al flujo automatico](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/CrearTraspasoFlujoAutomatico/CrearTraspasoFlujoAutomatico.svg)
 
 ---
 
@@ -410,28 +410,6 @@ En esta seccion se detallan los casos de uso del sistema desde el punto de vista
 - **Casos de Error:** Datos invalidos, autenticacion fallida o error de almacenamiento externo.
 - **Postcondiciones:** El caso de prueba queda registrado en Kiwi TCMS.
 - **Diagrama:** ![Registrar caso de prueba en Kiwi TCMS](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/KiwiTCMS/RegistrarCasoPrueba/RegistrarCasoPrueba.svg)
-
----
-
-## CU38. Registrar cuenta
-- **Actor:** Ingeniero de QA
-- **Descripcion:** Permite crear una cuenta de usuario para acceder al sistema.
-- **Precondiciones:** El actor no tiene una sesion iniciada o accede desde la pantalla de registro.
-- **Flujo principal:** 1. El actor solicita registrarse. 2. Introduce usuario, email y contrasena. 3. El sistema valida que los datos sean aceptables y que el usuario no exista. 4. El sistema crea la cuenta e inicia la sesion del usuario.
-- **Casos de Error:** Usuario ya existente, datos incompletos o fallo al crear la cuenta.
-- **Postcondiciones:** La cuenta queda creada y el usuario accede al sistema.
-- **Diagrama:** ![Registrar cuenta](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/RegistrarCuenta/RegistrarCuenta.svg)
-
----
-
-## CU39. Crear traspaso hacia los agentes
-- **Actor:** Ingeniero de QA
-- **Descripcion:** Permite transferir una sesion con documentacion al entorno de agentes para preparar artefactos y borradores de forma automatica.
-- **Precondiciones:** El actor ha iniciado sesion, existe una sesion con proyecto y hay documentacion asociada.
-- **Flujo principal:** 1. El actor elige continuar con el flujo de agentes. 2. El sistema valida que la sesion tenga proyecto y documentacion. 3. El sistema crea el traspaso al entorno de agentes. 4. El entorno de agentes recupera la documentacion de la sesion y prepara artefactos derivados. 5. El sistema guarda la referencia al entorno de agentes y marca la sesion como automatica. 6. El actor puede abrir el entorno de agentes para continuar la revision.
-- **Casos de Error:** Sesion no encontrada, proyecto vacio, sesion sin documentacion o entorno de agentes no disponible.
-- **Postcondiciones:** La sesion queda en modo automatico y el actor puede continuar el trabajo desde el entorno de agentes.
-- **Diagrama:** ![Crear traspaso hacia los agentes](/Estudiantes/david-garcia-costa/Capitulo_2/CdU/DetallarCdU/QA/CrearTraspasoHaciaAgentes/CrearTraspasoHaciaAgentes.svg)
 
 ---
 

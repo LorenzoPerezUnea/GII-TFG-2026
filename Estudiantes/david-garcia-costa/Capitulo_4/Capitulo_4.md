@@ -32,14 +32,6 @@ En el flujo manual, el ingeniero de QA trabaja directamente con los artefactos f
 
 ![Borrador de caso de prueba](Imagenes_MapaNavegacion/Borrador.png)
 
-![Inicio de Kiwi TCMS](Imagenes_MapaNavegacion/InicioKiwi.png)
-
-![Búsqueda de casos en Kiwi TCMS](Imagenes_MapaNavegacion/BuscarCasos.png)
-
-![Vista de caso manual](Imagenes_MapaNavegacion/VerCasoManual.png)
-
-![Caso de prueba manual](Imagenes_MapaNavegacion/CasoPruebaManual.png)
-
 ![Borrador rechazado en flujo manual](Imagenes_MapaNavegacion/BorradorRechazadoManual.png)
 
 ## Flujo de agentes
@@ -62,11 +54,7 @@ En el flujo automático, la aplicación traspasa la sesión al entorno de agente
 
 ![Aceptar borrador automático](Imagenes_MapaNavegacion/AceptarBorradorAuto.png)
 
-Para ver los casos publicados en Kiwi TCMS, el actor accede con su cuenta y navega a `Buscar > Buscar casos de prueba`.
 
-![Casos de prueba automáticos](Imagenes_MapaNavegacion/CasosPruebaAuto.png)
-
-![Ver casos de prueba en Kiwi TCMS](Imagenes_MapaNavegacion/VerCasosPrueba_Auto.png)
 
 ## Detalles más importantes de la parte manual
 
@@ -220,7 +208,7 @@ Este archivo contiene la integración real con Kiwi TCMS. Recibe el Gherkin apro
 
 ![Introducir documentación funcional con detalle](CasosUsoRelevantes/IntroducirDocumentacionFuncional/IntroducirDocumentacionFuncional2.png)
 
-### UC-39: Crear traspaso al flujo automático
+### UC-36: Crear traspaso al flujo automático
 
 ![Crear traspaso al flujo automático](CasosUsoRelevantes/CrearTraspasoFlujoAuto/CrearTraspasoFlujoAuto.png)
 
@@ -270,15 +258,15 @@ Parte de agentes de IA:
 
 ![Crear borrador de caso de prueba con agentes](CasosUsoRelevantes/CrearBorradorCasoPrueba/Auto/CrearBorradorCasoPrueba.png)
 
-### UC-30: Aceptar y publicar caso de prueba a partir de borrador
+### UC-30: Publicar caso de prueba a partir de borrador
 
 Parte manual:
 
-![Aceptar y publicar caso de prueba manualmente](CasosUsoRelevantes/AceptaryPublicarCasoPrueba/Manual/AceptaryPublicarCasoPrueba.png)
+![Publicar caso de prueba manualmente](CasosUsoRelevantes/AceptaryPublicarCasoPrueba/Manual/AceptaryPublicarCasoPrueba.png)
 
 Parte de agentes de IA:
 
-![Aceptar y publicar caso de prueba con agentes](CasosUsoRelevantes/AceptaryPublicarCasoPrueba/Auto/AceptaryPublicarCasoPrueba.png)
+![Publicar caso de prueba con agentes](CasosUsoRelevantes/AceptaryPublicarCasoPrueba/Auto/AceptaryPublicarCasoPrueba.png)
 
 ## Estructura de carpetas
 
@@ -287,6 +275,82 @@ La solución se organiza en dos bloques principales: la aplicación manual y el 
 ![Estructura de carpetas de agent](EstructuraCarpetas/Agent/Agent.png)
 
 ![Estructura de carpetas de app](EstructuraCarpetas/App/App.png)
+
+## Comunicación entre la aplicación, los agentes y Kiwi TCMS
+
+### 1. Handoff desde app hacia agentes
+
+`POST /sessions/:id/handoff-to-agent`
+
+Este endpoint lo llama el frontend sobre `app` Express. El `id` va en la URL:
+
+`POST /sessions/682abf1e31f0dcb5f14d9123/handoff-to-agent`
+
+La aplicación valida que la sesión tenga proyecto y documentación. Después construye internamente este request hacia el agente:
+
+`POST /api/kiwi-mvc/handoff`
+
+![Código handoff](ComunicacionImagenes/CodigoHandoff.png)
+
+Response:
+
+![Código Response 1](<ComunicacionImagenes/CodigoResponse(1).png>)
+
+### 2. Cómo hacen request los agentes
+
+El único request HTTP interno importante es el que lanza el runtime ADK:
+
+`POST /run`
+
+![Código POST run](<ComunicacionImagenes/CodigoPOST_run .png>)
+
+Y para recuperar documentación, el agente usa una tool, no un endpoint REST:
+
+`get_kiwimvc_session_docs(source_session_id)`
+
+![Código get_kiwimvc_session_docs](ComunicacionImagenes/Codigo_get_kiwimvc_session_docs.png)
+
+### 3. Publicación en Kiwi desde agentes
+
+No hay endpoint REST propio tipo `/agent/publish`.
+
+La publicación automática se hace mediante tool interna:
+
+`publish_draft(summary, project_name)`
+
+Esta llama a:
+
+`upsert_testcase_uc`
+
+Y finalmente a Kiwi TCMS:
+
+`rpc.TestCase.create(payload)`
+
+Payload enviado a Kiwi:
+
+![Código Payload enviado a Kiwi 1](<ComunicacionImagenes/CodigoPayloadEnviadoKiwi(1).png>)
+
+Response interna:
+
+![Código Response 2](<ComunicacionImagenes/CodigoResponse(2).png>)
+
+### 4. Publicación manual en Kiwi
+
+`publishDraftToKiwi`
+
+![Código publishDraftToKiwi](<ComunicacionImagenes/CodigopublishDraftToKiwi .png>)
+
+Y después a Kiwi:
+
+`TestCase.create(payload)`
+
+Payload enviado a Kiwi:
+
+![Código TestCase.create 2](<ComunicacionImagenes/CodigoTestCaseCreate(2).png>)
+
+Response:
+
+![Código Response 3](<ComunicacionImagenes/CodigoResponse(3).png>)
 
 ## Plan contratado para la IA
 
